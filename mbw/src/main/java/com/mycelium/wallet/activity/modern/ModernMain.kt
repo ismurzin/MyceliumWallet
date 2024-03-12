@@ -40,7 +40,6 @@ import com.mycelium.wallet.activity.news.NewsActivity
 import com.mycelium.wallet.activity.news.NewsUtils
 import com.mycelium.wallet.activity.send.InstantWalletActivity
 import com.mycelium.wallet.activity.settings.SettingsActivity
-import com.mycelium.wallet.activity.settings.SettingsPreference
 import com.mycelium.wallet.activity.settings.SettingsPreference.getMainMenuContent
 import com.mycelium.wallet.activity.settings.SettingsPreference.isContentEnabled
 import com.mycelium.wallet.activity.settings.SettingsPreference.mediaFlowEnabled
@@ -48,6 +47,7 @@ import com.mycelium.wallet.activity.util.collapse
 import com.mycelium.wallet.activity.util.expand
 import com.mycelium.wallet.databinding.ModernMainBinding
 import com.mycelium.wallet.event.*
+import com.mycelium.wallet.external.buycrypto.BuyCryptoFragment
 import com.mycelium.wallet.external.changelly.ChangellyConstants
 import com.mycelium.wallet.external.changelly2.ExchangeFragment
 import com.mycelium.wallet.external.changelly2.HistoryFragment
@@ -112,6 +112,8 @@ class ModernMain : AppCompatActivity(), BackHandler {
             mExchangeTab = binding.pagerTabs.newTab().setText(R.string.tab_exchange_title)
             mTabsAdapter!!.addTab(mExchangeTab!!, ExchangeFragment::class.java, null, TAB_EXCHANGE)
         }
+        mAccountsTab = binding.pagerTabs.newTab().setText(getString(R.string.tab_buy_crypto))
+        mTabsAdapter!!.addTab(mAccountsTab!!, BuyCryptoFragment::class.java, null, TAB_BUY_CRYPTO) // fixme
         mAccountsTab = binding.pagerTabs.newTab().setText(getString(R.string.tab_accounts))
         mTabsAdapter!!.addTab(mAccountsTab!!, AccountsFragment::class.java, null, TAB_ACCOUNTS)
         mBalanceTab = binding.pagerTabs.newTab().setText(getString(R.string.tab_balance))
@@ -147,8 +149,10 @@ class ModernMain : AppCompatActivity(), BackHandler {
         ModularisationVersionHelper.notifyWrongModuleVersion(this)
         handleIntent(intent)
 
-        val tab = mTabsAdapter!!.indexOf(TAB_EXCHANGE)
+        var tab = mTabsAdapter!!.indexOf(TAB_EXCHANGE)
         binding.pagerTabs.getTabAt(tab)?.setCustomView(R.layout.layout_exchange_tab)
+        tab = mTabsAdapter!!.indexOf(TAB_BUY_CRYPTO)
+        binding.pagerTabs.getTabAt(tab)?.setCustomView(R.layout.layout_buy_crypto_tab)
 
         lifecycleScope.launchWhenResumed {
             ChangeLog.showIfNewVersion(this@ModernMain, supportFragmentManager)
@@ -594,6 +598,7 @@ class ModernMain : AppCompatActivity(), BackHandler {
 
     companion object {
         private const val TAB_NEWS = "tab_news"
+        private const val TAB_BUY_CRYPTO = "tab_buy_crypto"
         private const val TAB_ACCOUNTS = "tab_accounts"
         const val TAB_BALANCE = "tab_balance"
         const val TAB_EXCHANGE = "tab_exchange"

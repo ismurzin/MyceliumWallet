@@ -7,12 +7,12 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.viewModelScope
 import com.mrd.bitlib.TransactionUtils
-import com.mycelium.wallet.MbwManager
 import com.mycelium.wallet.R
 import com.mycelium.wallet.Utils
 import com.mycelium.wallet.WalletApplication
 import com.mycelium.wallet.activity.util.toStringFriendlyWithUnit
 import com.mycelium.wallet.activity.util.toStringWithUnit
+import com.mycelium.wallet.external.AccountRepository
 import com.mycelium.wallet.external.changelly.model.FixRate
 import com.mycelium.wapi.wallet.Address
 import com.mycelium.wapi.wallet.Transaction
@@ -30,18 +30,26 @@ import kotlinx.coroutines.launch
 import java.math.BigDecimal
 
 
-class ExchangeViewModel(application: Application) : AndroidViewModel(application) {
-    val mbwManager = MbwManager.getInstance(WalletApplication.getInstance())
-    var currencies = setOf("BTC", "ETH")
-    val fromAccount = MutableLiveData<WalletAccount<*>>()
-    val exchangeInfo = MutableLiveData<FixRate>()
-    val sellValue = object : MutableLiveData<String>() {
+class ExchangeViewModel(application: Application) : AndroidViewModel(application), AccountRepository {
+
+    override val fromAccount = MutableLiveData<WalletAccount<*>>()
+    override val sellValue = object : MutableLiveData<String>() {
         override fun setValue(value: String?) {
             if (this.value != value) {
                 super.setValue(value)
             }
         }
     }
+    override val toAccount = MediatorLiveData<WalletAccount<*>>().apply {
+        addSource(fromAccount) {
+            if (value?.coinType == it.coinType) {
+                viewModelScope.launch { postValue(getToAccountForInit()) }
+            }
+        }
+    }
+
+    var currencies = setOf("BTC", "ETH")
+    val exchangeInfo = MutableLiveData<FixRate>()
     val buyValue = MutableLiveData<String>()
     val errorKeyboard = MutableLiveData("")
     val errorTransaction = MutableLiveData("")
@@ -51,13 +59,6 @@ class ExchangeViewModel(application: Application) : AndroidViewModel(application
     var changellyTx: String? = null
     var swapDirection = 0
 
-    val toAccount = MediatorLiveData<WalletAccount<*>>().apply {
-        addSource(fromAccount) {
-            if (value?.coinType == it.coinType) {
-                viewModelScope.launch { postValue(getToAccountForInit()) }
-            }
-        }
-    }
     val swapEnableDelay = MutableLiveData<Boolean>(false)
     val swapEnabled = MediatorLiveData<Boolean>().apply {
         value = false
@@ -325,7 +326,7 @@ class ExchangeViewModel(application: Application) : AndroidViewModel(application
                         && isSupported(it.coinType)
             }
 
-    fun isSupported(coinType: CryptoCurrency) =
+    override fun isSupported(coinType: CryptoCurrency) =
             currencies.contains(Util.trimTestnetSymbolDecoration(coinType.symbol).toLowerCase())
 
     companion object {

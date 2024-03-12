@@ -27,10 +27,10 @@ import com.mycelium.wallet.activity.view.loader
 import com.mycelium.wallet.databinding.FragmentChangelly2SelectAccountBinding
 import com.mycelium.wallet.databinding.LayoutSelectEthAccountToErc20Binding
 import com.mycelium.wallet.event.AccountListChanged
+import com.mycelium.wallet.external.AccountRepository
 import com.mycelium.wallet.external.changelly2.adapter.AddAccountModel
 import com.mycelium.wallet.external.changelly2.adapter.GroupModel
 import com.mycelium.wallet.external.changelly2.adapter.SelectAccountAdapter
-import com.mycelium.wallet.external.changelly2.viewmodel.ExchangeViewModel
 import com.mycelium.wapi.wallet.WalletAccount
 import com.mycelium.wapi.wallet.erc20.coins.ERC20Token
 import com.mycelium.wapi.wallet.eth.EthAccount
@@ -41,11 +41,10 @@ import kotlinx.coroutines.withContext
 import java.util.*
 
 
-class SelectAccountFragment : DialogFragment() {
+class SelectAccountFragment(private val repository: AccountRepository) : DialogFragment() {
 
     val adapter = SelectAccountAdapter()
     var binding: FragmentChangelly2SelectAccountBinding? = null
-    val viewModel: ExchangeViewModel by activityViewModels()
     val listModel: AccountsListModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -103,11 +102,11 @@ class SelectAccountFragment : DialogFragment() {
     private fun setAccount(accountId: UUID) {
         val keyType = arguments?.getString(KEY_TYPE)
         lifecycleScope.launch {
-            val account = viewModel.mbwManager.getWalletManager(false).getAccount(accountId)
+            val account = repository.mbwManager.getWalletManager(false).getAccount(accountId)
             if (keyType == VALUE_SELL) {
-                viewModel.fromAccount.postValue(account)
-                viewModel.sellValue.postValue("")
-            } else { viewModel.toAccount.postValue(account) }
+                repository.fromAccount.postValue(account)
+                repository.sellValue.postValue("")
+            } else { repository.toAccount.postValue(account) }
             withContext(Dispatchers.Main.immediate) { dismissAllowingStateLoss() }
         }
     }
@@ -134,11 +133,11 @@ class SelectAccountFragment : DialogFragment() {
                         if (arguments?.getString(KEY_TYPE) == VALUE_SELL) {
                             it.canSpend && it.balance?.spendable?.moreThanZero() == true
                         } else {
-                            it.coinType != viewModel.fromAccount.value?.coinType
+                            it.coinType != repository.fromAccount.value?.coinType
                         }
                     }
                     .filter {
-                        viewModel.isSupported(it.coinType)
+                        repository.isSupported(it.coinType)
                     }
             if (accounts.isNotEmpty()) {
                 val group = AccountsGroupModel(
@@ -149,8 +148,8 @@ class SelectAccountFragment : DialogFragment() {
                 accountsList.add(group)
                 if (!group.isCollapsed) {
                     accounts.forEach { model ->
-                        viewModel.mbwManager.exchangeRateManager
-                                .get(model.balance?.spendable, viewModel.mbwManager.getFiatCurrency(model.coinType))?.let {
+                        repository.mbwManager.exchangeRateManager
+                                .get(model.balance?.spendable, repository.mbwManager.getFiatCurrency(model.coinType))?.let {
                                     model.additional["fiat"] = it.toStringWithUnit()
                                 }
                     }
@@ -165,8 +164,8 @@ class SelectAccountFragment : DialogFragment() {
                     .map {
                         it.coinType.symbol
                     }.toSet()
-            val addAccountList = viewModel.mbwManager.supportedERC20Tokens.filter {
-                viewModel.isSupported(it.value) && !alreadyHave.contains(it.value.symbol)
+            val addAccountList = repository.mbwManager.supportedERC20Tokens.filter {
+                repository.isSupported(it.value) && !alreadyHave.contains(it.value.symbol)
             }.map {
                 AddAccountModel(it.value)
             }.sortedBy { it.coinType.symbol }
@@ -187,7 +186,7 @@ class SelectAccountFragment : DialogFragment() {
 
     private fun showEthAccountsOptions(token: ERC20Token) {
         val arrayAdapter = ERC20EthAccountAdapter(requireContext(), R.layout.checked_item)
-        val accounts = viewModel.mbwManager.getWalletManager(false).getActiveEthAccounts()
+        val accounts = repository.mbwManager.getWalletManager(false).getActiveEthAccounts()
                 .sortedBy { (it as EthAccount).accountIndex }
         arrayAdapter.addAll(getEthAccountsForView(accounts))
         arrayAdapter.add(getString(R.string.create_new_account))
@@ -201,15 +200,15 @@ class SelectAccountFragment : DialogFragment() {
                     val selected = arrayAdapter.selected
                     if (selected == arrayAdapter.count - 1) {
                         // "Create new account" item
-                        viewModel.mbwManager.createETH({
+                        repository.mbwManager.createETH({
                             loader(true)
                         }, {
                             loader(false)
-                            addToken(viewModel.mbwManager.getWalletManager(false).getAccount(it!!) as EthAccount, token)
+                            addToken(repository.mbwManager.getWalletManager(false).getAccount(it!!) as EthAccount, token)
                         })
                     } else {
                         val ethAccountId = accounts[selected].id
-                        val ethAccount = viewModel.mbwManager.getWalletManager(false).getAccount(ethAccountId) as EthAccount
+                        val ethAccount = repository.mbwManager.getWalletManager(false).getAccount(ethAccountId) as EthAccount
                         addToken(ethAccount, token)
                     }
                 }
@@ -217,7 +216,7 @@ class SelectAccountFragment : DialogFragment() {
     }
 
     private fun addToken(ethAccount: EthAccount, token: ERC20Token) {
-        viewModel.mbwManager.createERC20(listOf(token), ethAccount, {
+        repository.mbwManager.createERC20(listOf(token), ethAccount, {
             loader(true)
         }, {
             loader(false)
@@ -227,7 +226,7 @@ class SelectAccountFragment : DialogFragment() {
 
     private fun getEthAccountsForView(accounts: List<WalletAccount<*>>): List<String> =
             accounts.map { account ->
-                        val denominatedValue = account.accountBalance.spendable.toStringWithUnit(viewModel.mbwManager.getDenomination(account.coinType))
+                        val denominatedValue = account.accountBalance.spendable.toStringWithUnit(repository.mbwManager.getDenomination(account.coinType))
                         account.label + " (" + denominatedValue + ")"
                     }
 

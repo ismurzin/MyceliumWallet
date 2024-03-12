@@ -134,7 +134,7 @@ class ExchangeFragment : Fragment(), BackListener {
         }
         val selectSellAccount = { _: View ->
             binding?.layoutValueKeyboard?.numericKeyboard?.done()
-            SelectAccountFragment().apply {
+            SelectAccountFragment(viewModel).apply {
                 arguments = Bundle().apply {
                     putString(SelectAccountFragment.KEY_TYPE, SelectAccountFragment.VALUE_SELL)
                 }
@@ -157,7 +157,7 @@ class ExchangeFragment : Fragment(), BackListener {
             viewModel.keyboardActive.value = true
         }
         val selectBuyAccount = { _: View ->
-            SelectAccountFragment().apply {
+            SelectAccountFragment(viewModel).apply {
                 arguments = Bundle().apply {
                     putString(SelectAccountFragment.KEY_TYPE, SelectAccountFragment.VALUE_BUY)
                 }
