@@ -2,7 +2,6 @@ package com.mycelium.wallet.external.buycrypto
 
 import android.app.Application
 import android.content.Context
-import android.util.Log
 import androidx.core.content.edit
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MediatorLiveData
@@ -42,7 +41,7 @@ class BuyCryptoViewModel(
     private val preferences =
         application.getSharedPreferences(PREFERENCE_FILE, Context.MODE_PRIVATE)
 
-    var currencies = setOf("ETH", "BTC")
+    var currencies = emptySet<String>()
     val exchangeInfo = MutableLiveData<FixRate>()
     val buyValue = MutableLiveData<String>()
     val errorKeyboard = MutableLiveData("")
@@ -299,7 +298,6 @@ class BuyCryptoViewModel(
         mbwManager.getWalletManager(false)
             .getAllActiveAccounts(), mbwManager.metadataStorage
     ).firstOrNull {
-        Log.wtf("MY_TAG", "bc: ${it.receiveAddress} ${isSupported(it.coinType)}");
         isSupported(it.coinType)
     }
 
