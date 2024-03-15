@@ -1854,4 +1854,5 @@ All new bitcoins, mined by the pool, are proportionally distributed among RMC bi
     <string name="hide_this_ad">Stop showing this ad</string>
     <string name="tab_buy_crypto">Buy crypto</string>
     <string name="buy_crypto_next_step">Next step</string>
+    <string name="buy_crypto_select_fiat_to_pay_with">Select fiat to pay with:</string>
 </resources>

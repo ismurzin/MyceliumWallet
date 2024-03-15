@@ -34,6 +34,7 @@
 
 package com.mycelium.wallet;
 
+import static com.mycelium.wapi.wallet.Util.trimTestnetSymbolDecoration;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -65,6 +66,7 @@ import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
@@ -1174,4 +1176,16 @@ public class Utils {
       }
       return null;
    }
+
+   @NonNull
+    public static Uri tokenLogoPath(CryptoCurrency coin) {
+        return tokenLogoPath(trimTestnetSymbolDecoration(coin.getSymbol()));
+    }
+
+    @NonNull
+    public static Uri tokenLogoPath(String coin) {
+        String dirPath = "file:///android_asset/token-logos/";
+        String iconPath = coin.toLowerCase(Locale.ROOT) + "_logo.png";
+        return Uri.parse(dirPath + iconPath);
+    }
 }

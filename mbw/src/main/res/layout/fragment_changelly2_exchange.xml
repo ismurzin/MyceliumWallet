@@ -66,7 +66,7 @@
                     bind:balance="@{ValueExtensionsKt.toStringFriendlyWithUnit(vm.fromAccount.accountBalance.spendable, Denomination.UNIT)}"
                     bind:balanceFiat="@{vm.fromFiatBalance}"
                     bind:chain="@{vm.fromChain}"
-                    bind:coinType="@{vm.fromCurrency}"
+                    bind:coinTypeSymbol="@{vm.fromCurrency.symbol}"
                     bind:fiatValue="@{vm.fiatSellValue}"
                     bind:partLabel="@{@string/bequant_you_send}"/>
 
@@ -202,7 +202,7 @@
                     bind:balance="@{vm.toBalance}"
                     bind:balanceFiat="@{vm.toFiatBalance}"
                     bind:chain="@{vm.toChain}"
-                    bind:coinType="@{vm.toCurrency}"
+                    bind:coinTypeSymbol="@{vm.toCurrency.symbol}"
                     bind:fiatValue="@{vm.fiatBuyValue}"
                     bind:partLabel="@{@string/bequant_you_get}" />
 

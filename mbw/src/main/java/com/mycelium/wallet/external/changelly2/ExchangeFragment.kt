@@ -2,7 +2,6 @@ package com.mycelium.wallet.external.changelly2
 
 import android.content.Context
 import android.graphics.Color
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -49,8 +48,6 @@ import com.mycelium.wapi.wallet.Transaction
 import com.mycelium.wapi.wallet.Util
 import com.mycelium.wapi.wallet.btc.AbstractBtcAccount
 import com.mycelium.wapi.wallet.btc.BtcAddress
-import com.mycelium.wapi.wallet.coins.CryptoCurrency
-import com.mycelium.wapi.wallet.coins.Value
 import com.mycelium.wapi.wallet.erc20.ERC20Account
 import com.mycelium.wapi.wallet.eth.EthAccount
 import com.mycelium.wapi.wallet.eth.EthAddress
@@ -310,7 +307,7 @@ class ExchangeFragment : Fragment(), BackListener {
             binding?.sellLayout?.coinIcon?.let {
                 Glide.with(it).clear(it)
                 Glide.with(it)
-                        .load(iconPath(coin))
+                        .load(Utils.tokenLogoPath(coin))
                         .apply(RequestOptions().transforms(CircleCrop()))
                         .into(it)
             }
@@ -320,7 +317,7 @@ class ExchangeFragment : Fragment(), BackListener {
             binding?.buyLayout?.coinIcon?.let {
                 Glide.with(it).clear(it)
                 Glide.with(it)
-                        .load(iconPath(coin))
+                        .load(Utils.tokenLogoPath(coin))
                         .apply(RequestOptions().transforms(CircleCrop()))
                         .into(it)
             }
@@ -632,13 +629,6 @@ class ExchangeFragment : Fragment(), BackListener {
         const val TAG_SELECT_ACCOUNT_SELL = "select_account_for_sell"
         const val TAG_HISTORY = "history"
         private const val N_A = "N/A"
-
-        fun iconPath(coin: CryptoCurrency) =
-                iconPath(Util.trimTestnetSymbolDecoration(coin.symbol))
-
-        fun iconPath(coin: String) =
-                Uri.parse("file:///android_asset/token-logos/" + coin.toLowerCase() + "_logo.png")
-
         const val CHANGELLY_TERM_OF_USER = "https://changelly.com/terms-of-use"
     }
 }

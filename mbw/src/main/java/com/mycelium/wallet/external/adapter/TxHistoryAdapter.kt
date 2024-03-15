@@ -11,7 +11,7 @@ import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.bumptech.glide.request.RequestOptions
 import com.mycelium.bequant.common.equalsValuesBy
 import com.mycelium.wallet.R
-import com.mycelium.wallet.external.changelly2.ExchangeFragment
+import com.mycelium.wallet.Utils
 import kotlinx.android.synthetic.main.item_changelly2_history.view.*
 
 data class TxItem(val id: String,
@@ -39,13 +39,13 @@ class TxHistoryAdapter : ListAdapter<TxItem, RecyclerView.ViewHolder>(DiffCallba
 
         Glide.with(h.iconFrom).clear(h.iconFrom)
         Glide.with(h.iconFrom)
-                .load(ExchangeFragment.iconPath(item.currencyFrom))
+                .load(Utils.tokenLogoPath(item.currencyFrom))
                 .apply(RequestOptions().transforms(CircleCrop()))
                 .into(h.iconFrom)
 
         Glide.with(h.iconTo).clear(h.iconTo)
         Glide.with(h.iconTo)
-                .load(ExchangeFragment.iconPath(item.currencyTo))
+                .load(Utils.tokenLogoPath(item.currencyTo))
                 .apply(RequestOptions().transforms(CircleCrop()))
                 .into(h.iconTo)
 
