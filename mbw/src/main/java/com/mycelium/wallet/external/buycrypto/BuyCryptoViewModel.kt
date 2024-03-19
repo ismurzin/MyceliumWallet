@@ -2,7 +2,6 @@ package com.mycelium.wallet.external.buycrypto
 
 import android.app.Application
 import android.content.Context
-import android.util.Log
 import androidx.core.content.edit
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MediatorLiveData
@@ -15,11 +14,10 @@ import com.mycelium.wallet.external.AccountRepository
 import com.mycelium.wallet.external.changelly2.remote.Changelly2Repository
 import com.mycelium.wallet.external.fiat.ChangellyFiatRepository
 import com.mycelium.wallet.external.fiat.model.ChangellyFiatCurrenciesResponse
+import com.mycelium.wallet.external.fiat.model.ChangellyMethod
 import com.mycelium.wapi.wallet.Util
 import com.mycelium.wapi.wallet.WalletAccount
 import com.mycelium.wapi.wallet.coins.CryptoCurrency
-import com.mycelium.wapi.wallet.coins.Value
-import java.math.BigDecimal
 import java.util.Locale
 
 
@@ -44,9 +42,8 @@ class BuyCryptoViewModel(
         private set
 
     val buyValue = MutableLiveData<String>()
-    val errorKeyboard = MutableLiveData("")
-    private val errorTransaction = MutableLiveData("")
     val keyboardActive = MutableLiveData(false)
+    val methods = MutableLiveData<List<ChangellyMethod>>()
 
     init {
         initCurrencies()
@@ -68,7 +65,7 @@ class BuyCryptoViewModel(
             { currencies ->
                 currencies?.let {
                     fiatCurrencies = it
-                    fromFiat.value = it.first()
+                    fromFiat.value = it.first { fiat -> fiat.ticker == DEFAULT_FIAT_TICKER }
                 }
             })
     }
@@ -77,30 +74,6 @@ class BuyCryptoViewModel(
         toAccount.value = getToAccountForInit()
     }
 
-
-    val error = MediatorLiveData<String>().apply {
-        value = ""
-        fun error() =
-            when {
-                keyboardActive.value == true -> ""
-                errorKeyboard.value?.isNotEmpty() == true -> errorKeyboard.value
-                errorTransaction.value?.isNotEmpty() == true -> errorTransaction.value
-                else -> ""
-            }
-        addSource(errorKeyboard) {
-            value = error()
-        }
-        addSource(errorTransaction) {
-            value = error()
-        }
-        addSource(keyboardActive) {
-            value = error()
-        }
-        addSource(toAccount) {
-            errorKeyboard.value = ""
-            errorTransaction.value = ""
-        }
-    }
 
     val fromFiat = MutableLiveData<ChangellyFiatCurrenciesResponse>()
     val fromChain = MutableLiveData("")
@@ -126,36 +99,26 @@ class BuyCryptoViewModel(
         }
     }
 
-    val validateData = MediatorLiveData<Boolean>().apply {
+    val isValid = MediatorLiveData<Boolean>().apply {
         value = isValid()
-        addSource(toAddress) {
-            value = isValid()
-        }
-        addSource(sellValue) {
-            value = isValid()
-        }
+        addSource(toAddress) { value = isValid() }
+        addSource(sellValue) { value = isValid() }
+        addSource(fromFiat) { value = isValid() }
     }
 
-    fun isValid(): Boolean =
-        try {
-            errorTransaction.value = ""
-            val amount = sellValue.value?.toBigDecimal()
+    fun isValid(): Boolean {
+        return try {
+            val sellAmount = sellValue.value?.toDouble() ?: .0
             when {
+                sellAmount == .0 -> false
                 toAddress.value == null -> false
-                amount == null -> false
-                amount == BigDecimal.ZERO -> false
-                else -> false
+                fromFiat.value == null -> false
+                else -> true
             }
         } catch (e: java.lang.NumberFormatException) {
             false
         }
-
-    fun convert(value: Value) =
-        " ~${
-            mbwManager.exchangeRateManager.get(value, mbwManager.getFiatCurrency(value.type))
-                ?.toStringFriendlyWithUnit() ?: ""
-        }"
-
+    }
 
     private fun getToAccountForInit() = Utils.sortAccounts(
         mbwManager.getWalletManager(false)
@@ -172,14 +135,25 @@ class BuyCryptoViewModel(
     companion object {
         const val PREFERENCE_FILE = "buy_crypto"
         const val KEY_SUPPORT_COINS = "coin_support_list"
-
+        const val DEFAULT_FIAT_TICKER = "USD"
     }
 
-    fun reset() {
-        sellValue.value = ""
-        buyValue.value = ""
-        errorTransaction.value = ""
-        errorKeyboard.value = ""
-        toAccount.value = toAccount.value
+    val getMethodsWithDebounce = Util.debounce(viewModelScope, { getMethods() })
+
+    private suspend fun getMethods() {
+        val currencyFrom = fromCurrency.value ?: return
+        val currencyTo = toCurrency.value?.symbol ?: return
+        val amountFrom = sellValue.value ?: return
+        try {
+            val data = ChangellyFiatRepository.getMethods(
+                currencyFrom,
+                currencyTo,
+                amountFrom,
+                "GE"
+            )
+            methods.value = data
+        } catch (e: Exception) {
+            // todo add error handling
+        }
     }
 }

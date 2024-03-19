@@ -1,8 +1,6 @@
 package com.mycelium.wallet.external.buycrypto
 
-import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,11 +8,11 @@ import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.bumptech.glide.request.RequestOptions
 import com.mycelium.wallet.MbwManager
-import com.mycelium.wallet.R
 import com.mycelium.wallet.Utils
 import com.mycelium.wallet.activity.modern.event.BackHandler
 import com.mycelium.wallet.activity.modern.event.BackListener
@@ -29,17 +27,13 @@ import com.mycelium.wallet.event.PageSelectedEvent
 import com.mycelium.wallet.event.SelectedCurrencyChanged
 import com.mycelium.wallet.external.changelly2.SelectAccountFragment
 import com.mycelium.wallet.external.changelly2.SelectFiatFragment
-import com.mycelium.wapi.wallet.Util
-import com.mycelium.wapi.wallet.coins.CryptoCurrency
 import com.squareup.otto.Subscribe
-import java.math.BigDecimal
-import java.util.Locale
 
 
 class BuyCryptoFragment : Fragment(), BackListener {
 
-    lateinit var binding: FragmentBuyCryptoBinding
-    val viewModel: BuyCryptoViewModel by viewModels()
+    private lateinit var binding: FragmentBuyCryptoBinding
+    private val viewModel: BuyCryptoViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,6 +59,7 @@ class BuyCryptoFragment : Fragment(), BackListener {
         setupButtons()
         setupInputs()
         setupObservers()
+        setupRecycler()
     }
 
     override fun onStart() {
@@ -109,34 +104,20 @@ class BuyCryptoFragment : Fragment(), BackListener {
             layoutValueKeyboard.numericKeyboard.done()
             SelectFiatFragment(viewModel.fiatCurrencies) {
                 viewModel.fromFiat.value = it
-            }.show(parentFragmentManager, TAG_SELECT_ACCOUNT_SELL)
+            }.show(parentFragmentManager, null)
         }
         sellLayout.coinSymbol.setOnClickListener(selectSellAccount)
         sellLayout.layoutAccount.setOnClickListener(selectSellAccount)
     }
 
     private fun setupBuyLayoutClickListeners() = binding.apply {
-        buyLayout.root.setOnClickListener {
-            sellLayout.coinValue.stopCursor()
-            buyLayout.coinValue.startCursor()
-            layoutValueKeyboard.numericKeyboard.run {
-                inputTextView = buyLayout.coinValue
-                maxDecimals = viewModel.toCurrency.value?.friendlyDigits ?: 0
-                spendableValue = null
-                isVisible = true
-                setEntry(viewModel.buyValue.value ?: "")
-            }
-            viewModel.keyboardActive.value = true
-        }
         val selectBuyAccount = { _: View ->
             SelectAccountFragment(viewModel).apply {
                 arguments = Bundle().apply {
                     putString(SelectAccountFragment.KEY_TYPE, SelectAccountFragment.VALUE_BUY)
                 }
-            }.show(parentFragmentManager, TAG_SELECT_ACCOUNT_BUY)
+            }.show(parentFragmentManager, null)
         }
-
-
         buyLayout.coinSymbol.setOnClickListener(selectBuyAccount)
         buyLayout.layoutAccount.setOnClickListener(selectBuyAccount)
     }
@@ -155,25 +136,8 @@ class BuyCryptoFragment : Fragment(), BackListener {
             }
             sellCoinValue.resizeTextView()
         }
-        viewModel.buyValue.observe(viewLifecycleOwner) { amount ->
-            val keyboardValue = binding.layoutValueKeyboard.numericKeyboard.inputTextView
-            val buyCoinValue = binding.buyLayout.coinValue
-            if (keyboardValue == buyCoinValue) {
-                viewModel.sellValue.value = if (amount?.isNotEmpty() == true) {
-                    try {
-                        // todo calculate sellValue
-                        N_A
-                    } catch (e: NumberFormatException) {
-                        N_A
-                    }
-                } else {
-                    null
-                }
-            }
-            if (buyCoinValue.text?.toString() != amount) {
-                buyCoinValue.text = amount
-            }
-            buyCoinValue.resizeTextView()
+        viewModel.buyValue.observe(viewLifecycleOwner) {
+            binding.buyLayout.coinValue.resizeTextView()
         }
         viewModel.fromCurrency.observe(viewLifecycleOwner) { coin ->
             binding.sellLayout.coinIcon.let {
@@ -193,6 +157,12 @@ class BuyCryptoFragment : Fragment(), BackListener {
                     .into(it)
             }
         }
+        viewModel.isValid.observe(viewLifecycleOwner) {
+            viewModel.getMethodsWithDebounce()
+        }
+        viewModel.methods.observe(viewLifecycleOwner) {
+            binding.offersList.adapter = BuyCryptoOffersAdapter(it.first().offers)
+        }
     }
 
     private fun setupInputs() = binding.apply {
@@ -204,43 +174,17 @@ class BuyCryptoFragment : Fragment(), BackListener {
                     viewModel.keyboardActive.value = false
                 }
             }
-            errorListener = object : ValueKeyboard.ErrorListener {
-                override fun maxError(maxValue: BigDecimal) {
-//                    viewModel.errorKeyboard.value = resources.getString(
-//                        R.string.exchange_max_msg,
-//                        viewModel.exchangeInfo.value?.maxFrom?.stripTrailingZeros()
-//                            ?.toPlainString(),
-//                        viewModel.exchangeInfo.value?.from?.toUpperCase(Locale.ROOT)
-//                    )
-                }
-
-                override fun minError(minValue: BigDecimal) {
-//                    viewModel.errorKeyboard.value = resources.getString(
-//                        R.string.exchange_min_msg,
-//                        viewModel.exchangeInfo.value?.minFrom?.stripTrailingZeros()
-//                            ?.toPlainString(),
-//                        viewModel.exchangeInfo.value?.from?.toUpperCase(Locale.ROOT)
-//                    )
-                }
-
-                override fun formatError() {
-                    viewModel.errorKeyboard.value = ""
-                }
-
-                override fun noError() {
-                    viewModel.errorKeyboard.value = ""
-                }
-            }
-            setMaxText(getString(R.string.max), 14f)
             setPasteVisibility(false)
             visibility = View.GONE
-        }
-        buyLayout.coinValue.doOnTextChanged { text, _, _, _ ->
-            viewModel.buyValue.value = text?.toString()
         }
         sellLayout.coinValue.doOnTextChanged { text, _, _, _ ->
             viewModel.sellValue.value = text?.toString()
         }
+        buyLayout.coinValue
+    }
+
+    private fun setupRecycler() = binding.apply {
+        binding.offersList.layoutManager = LinearLayoutManager(requireContext())
     }
 
 
@@ -262,11 +206,5 @@ class BuyCryptoFragment : Fragment(), BackListener {
     @Subscribe
     fun pageSelectedEvent(event: PageSelectedEvent) {
         binding.layoutValueKeyboard.numericKeyboard.done()
-    }
-
-    companion object {
-        const val TAG_SELECT_ACCOUNT_BUY = "select_account_for_buy"
-        const val TAG_SELECT_ACCOUNT_SELL = "select_account_for_sell"
-        private const val N_A = "N/A"
     }
 }

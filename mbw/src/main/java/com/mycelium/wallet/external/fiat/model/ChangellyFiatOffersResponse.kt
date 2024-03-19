@@ -7,7 +7,7 @@ data class ChangellyFiatOffersResponse(
     val fee: String?,
     val amountFrom: String?,
     val amountExpectedTo: String?,
-    val paymentMethodOffers: List<ChangellyFiatPaymentMethodResponse>?,
+    val paymentMethodOffer: List<ChangellyFiatPaymentMethodResponse>?,
     val errorType: String?,
     val errorMessage: String?,
     val errorDetails: List<ChangellyFiatPaymentError>?,

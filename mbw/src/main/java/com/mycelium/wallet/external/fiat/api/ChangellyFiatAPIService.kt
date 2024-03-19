@@ -14,7 +14,7 @@ import retrofit2.http.Query
 interface ChangellyFiatAPIService {
 
     @GET("providers")
-    suspend fun getProviders(): Response<List<ChangellyFiatProvidersResponse>>
+    suspend fun getProviders(): List<ChangellyFiatProvidersResponse>
 
     @GET("currencies")
     suspend fun getCurrencies(
@@ -32,7 +32,7 @@ interface ChangellyFiatAPIService {
         @Query("externalUserId") externalUserId: String? = null,
         @Query("state") state: String? = null,
         @Query("ip") ip: String? = null,
-    ): Response<List<ChangellyFiatOffersResponse>>
+    ): List<ChangellyFiatOffersResponse>
 
     @POST("orders")
     suspend fun createOrder(

@@ -24,7 +24,7 @@ class CurrencyFiatAdapter(
         val item = currencies[position]
         holder.binding.apply {
             label.text = item.name
-            coinType.text = item.type
+            coinType.text = item.ticker
             root.setOnClickListener { onSelect(item) }
         }
     }
