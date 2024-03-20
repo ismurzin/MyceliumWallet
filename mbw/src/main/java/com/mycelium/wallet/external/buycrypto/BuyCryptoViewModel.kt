@@ -34,6 +34,12 @@ class BuyCryptoViewModel(
             }
         }
     }
+
+    override fun isSupported(coinType: CryptoCurrency) =
+        cryptoCurrencies.contains(
+            Util.trimTestnetSymbolDecoration(coinType.symbol).toLowerCase(Locale.ROOT)
+        )
+
     private val preferences =
         application.getSharedPreferences(PREFERENCE_FILE, Context.MODE_PRIVATE)
 
@@ -44,6 +50,7 @@ class BuyCryptoViewModel(
     val buyValue = MutableLiveData<String>()
     val keyboardActive = MutableLiveData(false)
     val methods = MutableLiveData<List<ChangellyMethod>>()
+    val currentMethod = MutableLiveData<ChangellyMethod?>()
 
     init {
         initCurrencies()
@@ -106,7 +113,33 @@ class BuyCryptoViewModel(
         addSource(fromFiat) { value = isValid() }
     }
 
-    fun isValid(): Boolean {
+    fun selectMethod(method: ChangellyMethod) {
+        currentMethod.value = method
+    }
+
+    val getMethodsWithDebounce = Util.debounce(viewModelScope, { getMethods() })
+
+    private suspend fun getMethods() {
+        val currencyFrom = fromCurrency.value ?: return
+        val currencyTo = toCurrency.value?.symbol ?: return
+        val amountFrom = sellValue.value ?: return
+        try {
+            val data = ChangellyFiatRepository.getMethods(currencyFrom, currencyTo, amountFrom)
+            methods.value = data
+        } catch (_: Exception) {
+            // ignore http exception
+        }
+    }
+
+
+    private fun getToAccountForInit() = Utils.sortAccounts(
+        mbwManager.getWalletManager(false)
+            .getAllActiveAccounts(), mbwManager.metadataStorage
+    ).firstOrNull {
+        isSupported(it.coinType)
+    }
+
+    private fun isValid(): Boolean {
         return try {
             val sellAmount = sellValue.value?.toDouble() ?: .0
             when {
@@ -120,40 +153,9 @@ class BuyCryptoViewModel(
         }
     }
 
-    private fun getToAccountForInit() = Utils.sortAccounts(
-        mbwManager.getWalletManager(false)
-            .getAllActiveAccounts(), mbwManager.metadataStorage
-    ).firstOrNull {
-        isSupported(it.coinType)
-    }
-
-    override fun isSupported(coinType: CryptoCurrency) =
-        cryptoCurrencies.contains(
-            Util.trimTestnetSymbolDecoration(coinType.symbol).toLowerCase(Locale.ROOT)
-        )
-
     companion object {
         const val PREFERENCE_FILE = "buy_crypto"
         const val KEY_SUPPORT_COINS = "coin_support_list"
         const val DEFAULT_FIAT_TICKER = "USD"
-    }
-
-    val getMethodsWithDebounce = Util.debounce(viewModelScope, { getMethods() })
-
-    private suspend fun getMethods() {
-        val currencyFrom = fromCurrency.value ?: return
-        val currencyTo = toCurrency.value?.symbol ?: return
-        val amountFrom = sellValue.value ?: return
-        try {
-            val data = ChangellyFiatRepository.getMethods(
-                currencyFrom,
-                currencyTo,
-                amountFrom,
-                "GE"
-            )
-            methods.value = data
-        } catch (e: Exception) {
-            // todo add error handling
-        }
     }
 }

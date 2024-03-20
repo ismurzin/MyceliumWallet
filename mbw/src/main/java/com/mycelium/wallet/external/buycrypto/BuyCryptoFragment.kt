@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
@@ -13,6 +14,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.bumptech.glide.request.RequestOptions
 import com.mycelium.wallet.MbwManager
+import com.mycelium.wallet.R
 import com.mycelium.wallet.Utils
 import com.mycelium.wallet.activity.modern.event.BackHandler
 import com.mycelium.wallet.activity.modern.event.BackListener
@@ -27,6 +29,7 @@ import com.mycelium.wallet.event.PageSelectedEvent
 import com.mycelium.wallet.event.SelectedCurrencyChanged
 import com.mycelium.wallet.external.changelly2.SelectAccountFragment
 import com.mycelium.wallet.external.changelly2.SelectFiatFragment
+import com.mycelium.wallet.external.fiat.ChangellyFiatRepository.FAILED_PAYMENT_METHOD
 import com.squareup.otto.Subscribe
 
 
@@ -34,6 +37,8 @@ class BuyCryptoFragment : Fragment(), BackListener {
 
     private lateinit var binding: FragmentBuyCryptoBinding
     private val viewModel: BuyCryptoViewModel by viewModels()
+    private val methodsAdapter by lazy { BuyCryptoMethodsAdapter(viewModel::selectMethod) }
+    private val offersAdapter by lazy { BuyCryptoOffersAdapter { } }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,7 +61,6 @@ class BuyCryptoFragment : Fragment(), BackListener {
         binding.sellLayout.accountGroup.isVisible = false
         setupSellLayoutClickListeners()
         setupBuyLayoutClickListeners()
-        setupButtons()
         setupInputs()
         setupObservers()
         setupRecycler()
@@ -122,11 +126,6 @@ class BuyCryptoFragment : Fragment(), BackListener {
         buyLayout.layoutAccount.setOnClickListener(selectBuyAccount)
     }
 
-    private fun setupButtons() {
-        binding.nextStep.setOnClickListener {
-            // todo next step
-        }
-    }
 
     private fun setupObservers() {
         viewModel.sellValue.observe(viewLifecycleOwner) { amount ->
@@ -161,7 +160,28 @@ class BuyCryptoFragment : Fragment(), BackListener {
             viewModel.getMethodsWithDebounce()
         }
         viewModel.methods.observe(viewLifecycleOwner) {
-            binding.offersList.adapter = BuyCryptoOffersAdapter(it.first().offers)
+            if (it.isEmpty()) return@observe
+            binding.offersTitle.isVisible = true
+            if (it.size == 1 && it.first().paymentMethod == FAILED_PAYMENT_METHOD) {
+                binding.exchangeGroup.isInvisible = true
+                binding.methodsList.isVisible = false
+            } else {
+                binding.exchangeGroup.isInvisible = false
+                binding.methodsList.isVisible = true
+            }
+            methodsAdapter.methods = it
+            viewModel.selectMethod(it.first())
+        }
+        viewModel.currentMethod.observe(viewLifecycleOwner) {
+            if (it == null) return@observe
+            offersAdapter.currentMethod = it
+            binding.apply {
+                exchangeRateFrom.text =
+                    getString(R.string.buy_crypto_rate_currency_from, it.currencyFrom)
+                exchangeRateToCurrency.text = it.currencyTo
+                exchangeRateToValue.text = it.rate
+                buyLayout.coinValue.text = it.amountExpectedTo ?: "0"
+            }
         }
     }
 
@@ -185,8 +205,14 @@ class BuyCryptoFragment : Fragment(), BackListener {
 
     private fun setupRecycler() = binding.apply {
         binding.offersList.layoutManager = LinearLayoutManager(requireContext())
+        binding.offersList.adapter = offersAdapter
+        binding.methodsList.adapter = methodsAdapter
+        binding.methodsList.layoutManager = LinearLayoutManager(
+            requireContext(),
+            LinearLayoutManager.HORIZONTAL,
+            false,
+        )
     }
-
 
     @Subscribe
     fun exchangeRatesRefreshed(event: ExchangeRatesRefreshed) {

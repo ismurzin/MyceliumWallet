@@ -1,65 +1,50 @@
 package com.mycelium.wallet.external.fiat.model
 
 import android.net.Uri
+import androidx.annotation.StringRes
+import com.mycelium.wallet.R
 
 data class ChangellyMethod(
     val paymentMethod: String,
-    val paymentMethodName: String,
-    val rate: String,
+    val currencyFrom: String,
+    val currencyTo: String,
+    val amountExpectedTo: String?,
+    val rate: String?,
     val offers: List<ChangellyOffer> = emptyList(),
-) {
-    override fun hashCode(): Int {
-        return paymentMethod.hashCode()
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-        other as ChangellyMethod
-        return paymentMethod == other.paymentMethod
-    }
-}
+)
 
 data class ChangellyOffer(
     val name: String,
-    val iconUrl: Uri?,
+    val iconUrl: Uri? = null,
     val data: ChangellyOfferData? = null,
-    val error: ChangellyOfferError? = null,
+    val error: OfferErrorType? = null,
 )
 
 data class ChangellyOfferData(
     val rate: String,
+    val invertedRate: String,
     val amountExpectedTo: String,
-    val currencyFrom: String,
-    val currencyTo: String,
 )
 
-data class ChangellyOfferError(
-    val type: ErrorType,
-    val message: String = "",
-) {
-    enum class ErrorType {
-        MIN,
-        MAX,
-        COUNTRY,
-        UNEXPECTED,
-    }
+enum class OfferErrorType(@StringRes val messageId: Int) {
+    MIN(R.string.buy_crypto_error_min),
+    MAX(R.string.buy_crypto_error_max),
+    EXCHANGE_PAIR(R.string.buy_crypto_error_exchange),
+    INVALID_OFFER(R.string.buy_crypto_error_invalid_offer),
+    UNEXPECTED(R.string.buy_crypto_error_unexpected);
 
     companion object {
-        fun fromResponse(response: ChangellyFiatOffersResponse): ChangellyOfferError {
-            response.apply {
-                // todo add more types and add message handling
-                if (errorType == null || errorMessage == null || errorDetails.isNullOrEmpty()) {
-                    return ChangellyOfferError(ErrorType.UNEXPECTED)
+        fun fromResponse(response: ChangellyFiatOffersResponse): OfferErrorType {
+            return when (response.errorType) {
+                "limits" -> {
+                    val details = response.errorDetails?.firstOrNull() ?: return UNEXPECTED
+                    if (details.cause == "min") MIN
+                    return MAX
                 }
-                if (errorType == "limits") {
-                    val details = errorDetails.first()
-                    if (details.cause == "min") {
-                        return ChangellyOfferError(ErrorType.MIN)
-                    }
-                    return ChangellyOfferError(ErrorType.MAX)
-                }
-                return ChangellyOfferError(ErrorType.UNEXPECTED)
+
+                "currency" -> EXCHANGE_PAIR
+                "invalidOffer" -> INVALID_OFFER
+                else -> UNEXPECTED
             }
         }
     }

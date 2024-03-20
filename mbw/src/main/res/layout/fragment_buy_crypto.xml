@@ -100,12 +100,13 @@
                     android:textSize="14sp"
                     app:layout_constraintStart_toStartOf="@id/startGuidline"
                     app:layout_constraintTop_toBottomOf="@id/sellLayout"
-                    bind:text="1 BTC ≈ " />
+                    bind:text="1 BTC ≈" />
 
                 <TextView
                     android:id="@+id/exchangeRateToValue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
                     android:ellipsize="end"
                     android:singleLine="true"
                     android:textColor="#888888"
@@ -128,14 +129,15 @@
                     android:textSize="14sp"
                     app:layout_constraintBaseline_toBaselineOf="@id/exchangeRateFrom"
                     app:layout_constraintStart_toEndOf="@id/exchangeRateToValue"
-                    bind:text="USDT" />
+                    bind:text="USD" />
 
                 <androidx.constraintlayout.widget.Group
                     android:id="@+id/exchangeGroup"
                     android:layout_width="0dp"
                     android:layout_height="0dp"
                     android:visibility="invisible"
-                    app:constraint_referenced_ids="exchangeRateBackground,exchangeRateFrom,exchangeRateToValue,exchangeRateToCurrency" />
+                    app:constraint_referenced_ids="exchangeRateBackground,exchangeRateFrom,exchangeRateToValue,exchangeRateToCurrency"
+                    tools:visibility="visible" />
 
                 <include
                     android:id="@+id/buyLayout"
@@ -154,30 +156,39 @@
                     bind:coinTypeSymbol="@{vm.toCurrency.symbol}"
                     bind:partLabel="@{@string/bequant_you_get}" />
 
+                <TextView
+                    android:id="@+id/offersTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="16dp"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/buy_crypto_offer_title"
+                    android:textSize="22sp"
+                    android:visibility="invisible"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/buyLayout" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/methodsList"
+                    android:layout_width="match_parent"
+                    android:layout_height="36dp"
+                    android:layout_marginHorizontal="@dimen/horizontal_page_margin"
+                    android:layout_marginTop="12dp"
+                    app:layout_constraintTop_toBottomOf="@id/offersTitle"
+                    tools:listitem="@layout/buy_crypto_method_item"
+                    tools:orientation="horizontal" />
+
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/offersList"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_marginHorizontal="@dimen/horizontal_page_margin"
-                    android:layout_marginVertical="@dimen/activity_vertical_margin"
-                    app:layout_constraintBottom_toTopOf="@id/nextStep"
+                    android:layout_marginVertical="12dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/buyLayout"
+                    app:layout_constraintTop_toBottomOf="@id/methodsList"
                     tools:listitem="@layout/buy_crypto_offer_item" />
 
-                <Button
-                    android:id="@+id/nextStep"
-                    style="@style/MyceliumButton"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginBottom="8dp"
-                    android:enabled="false"
-                    android:text="@string/buy_crypto_next_step"
-                    android:textSize="20sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="@id/endGuidline"
-                    app:layout_constraintStart_toStartOf="@id/startGuidline" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.core.widget.NestedScrollView>

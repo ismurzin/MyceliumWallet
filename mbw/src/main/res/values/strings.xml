@@ -1856,6 +1856,13 @@ All new bitcoins, mined by the pool, are proportionally distributed among RMC bi
     <string name="buy_crypto_next_step">Next step</string>
     <string name="buy_crypto_select_fiat_to_pay_with">Select fiat to pay with:</string>
     <string name="buy_crypto_best_offer">best offer</string>
-    <string name="buy_crypto_rate">"≈ %s %s"</string>
-    <string name="buy_crypto_amount">"%s %s"</string>
+    <string name="buy_crypto_rate">≈ %s %s</string>
+    <string name="buy_crypto_amount">%s %s</string>
+    <string name="buy_crypto_offer_title">Offers</string>
+    <string name="buy_crypto_rate_currency_from">1 %s ≈  </string>
+    <string name="buy_crypto_error_min">Amount is too small</string>
+    <string name="buy_crypto_error_max">Amount is too big</string>
+    <string name="buy_crypto_error_exchange">Unsupported exchange pair</string>
+    <string name="buy_crypto_error_invalid_offer">Wrong offer error</string>
+    <string name="buy_crypto_error_unexpected">Error</string>
 </resources>

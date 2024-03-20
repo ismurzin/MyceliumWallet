@@ -82,7 +82,7 @@
         android:id="@+id/errorTint"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="#66242424"
+        android:background="#80242424"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/cardLayout"
         app:layout_constraintStart_toStartOf="@id/cardLayout"

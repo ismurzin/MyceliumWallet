@@ -11,9 +11,12 @@ import com.mycelium.wallet.external.fiat.model.ChangellyFiatProvidersResponse
 import com.mycelium.wallet.external.fiat.model.ChangellyMethod
 import com.mycelium.wallet.external.fiat.model.ChangellyOffer
 import com.mycelium.wallet.external.fiat.model.ChangellyOfferData
-import com.mycelium.wallet.external.fiat.model.ChangellyOfferError
+import com.mycelium.wallet.external.fiat.model.OfferErrorType
 import kotlinx.coroutines.CoroutineScope
-import java.util.Locale
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.withContext
 
 object ChangellyFiatRepository {
     private val api = ChangellyFiatRetrofitFactory.api
@@ -30,79 +33,94 @@ object ChangellyFiatRepository {
         doRequest(scope, { api.getCurrencies(type.value) }, success, error, finally)
     }
 
+    private suspend fun getProvidersDeferred(): Deferred<List<ChangellyFiatProvidersResponse>> {
+        return withContext(Dispatchers.IO) { async { api.getProviders() } }
+    }
+
     suspend fun getMethods(
         currencyFrom: String,
         currencyTo: String,
         amountFrom: String,
-        country: String? = null,
-        providerCode: String? = null,
-        externalUserId: String? = null,
-        state: String? = null,
-        ip: String? = null,
     ): List<ChangellyMethod> {
-        providers = providers.ifEmpty { api.getProviders() }
-        val systemCountry = Locale.getDefault().country
-        val defaultCountry = if (systemCountry.isNullOrBlank()) "US" else systemCountry
-        val countryCode = if (country.isNullOrBlank()) defaultCountry else country
+        // don't wait for the providers request to complete and send it concurrently
+        val providersDeferred = if (providers.isEmpty()) getProvidersDeferred() else null
         val offers = api.getOffers(
             currencyFrom = currencyFrom,
             currencyTo = currencyTo,
             amountFrom = amountFrom,
-            country = countryCode.toUpperCase(Locale.getDefault()),
-            providerCode = providerCode,
-            externalUserId = externalUserId,
-            state = state,
-            ip = ip,
+            country = COUNTRY_ISO,
+            state = US_STATE_ISO,
         )
+        // await providers request if needed
+        providers = providersDeferred?.await() ?: providers
+
+        // each method corresponds list of offers with actual exchange rates
         val methodsMap = offers.flatMap { offer ->
-            offer.paymentMethodOffer.orEmpty().map { method -> method to offer }
-        }.groupBy(
-            keySelector = { it.first },
-            valueTransform = { it.second }
-        ).mapValues { (_, offers) ->
-            offers.toMutableList()
+            offer.paymentMethodOffer.orEmpty().map { method ->
+                method to offer.copy(
+                    rate = method.rate,
+                    invertedRate = method.invertedRate,
+                    amountExpectedTo = method.amountExpectedTo,
+                )
+            }
+        }.groupBy(keySelector = { it.first.method }, valueTransform = { it.second }
+        ).mapValues { (_, offers) -> offers.toMutableList() }
+
+        // if all offers return error then there is no payment methods
+        // so create list with one special payment method
+        if (methodsMap.isEmpty()) {
+            return listOf(
+                ChangellyMethod(
+                    paymentMethod = FAILED_PAYMENT_METHOD,
+                    currencyFrom = currencyFrom,
+                    currencyTo = currencyTo,
+                    rate = null,
+                    amountExpectedTo = null,
+                    offers = offers.mapToChangellyOffers(),
+                )
+            )
         }
+
+        // add failed offers to each payment method
         offers.filter { it.errorType != null }.forEach { offer ->
             methodsMap.values.forEach { it.add(offer) }
         }
-        val methodsList = methodsMap.map { (methodResponse, offersResponse) ->
+
+        val methodsList = methodsMap.map { (method, offersResponse) ->
+            val mappedOffers = offersResponse.mapToChangellyOffers()
+            // best offer always first because of descending sorting
+            val bestOffer = mappedOffers.firstOrNull()?.data
             ChangellyMethod(
-                paymentMethod = methodResponse.method,
-                paymentMethodName = methodResponse.methodName,
-                rate = methodResponse.rate,
-                offers = offersResponse.mapToChangellyOffer(currencyFrom, currencyTo),
+                paymentMethod = method,
+                currencyFrom = currencyFrom,
+                currencyTo = currencyTo,
+                rate = bestOffer?.rate,
+                amountExpectedTo = bestOffer?.amountExpectedTo,
+                offers = mappedOffers,
             )
         }
-        return methodsList
+        return methodsList.sortedByDescending { it.rate }
     }
 
-    private fun List<ChangellyFiatOffersResponse>.mapToChangellyOffer(
-        currencyFrom: String,
-        currencyTo: String,
-    ): List<ChangellyOffer> {
+    private fun List<ChangellyFiatOffersResponse>.mapToChangellyOffers(): List<ChangellyOffer> {
         return map { response ->
             val provider = providers.find { it.code == response.providerCode }
             if (provider == null) {
-                val error = ChangellyOfferError(ChangellyOfferError.ErrorType.UNEXPECTED)
-                return@map ChangellyOffer("Undefined", null, error = error)
+                // error getting provider list - unexpected error
+                val error = OfferErrorType.UNEXPECTED
+                return@map ChangellyOffer(UNDEFINED_PROVIDER_NAME, null, error = error)
             }
             val name = provider.name
             val iconUrl = Utils.tokenLogoPath(provider.code)
-            val errorType = response.errorType
-            val rate = response.rate
-            val amountTo = response.amountExpectedTo
-            if (errorType != null || rate == null || amountTo == null) {
-                val error = ChangellyOfferError.fromResponse(response)
-                return@map ChangellyOffer(name, iconUrl, error = error)
+            return@map with(response) {
+                if (errorType != null || rate == null || invertedRate == null || amountExpectedTo == null) {
+                    val error = OfferErrorType.fromResponse(response)
+                    return@with ChangellyOffer(name, iconUrl, error = error)
+                }
+                val data = ChangellyOfferData(rate, invertedRate, amountExpectedTo)
+                return@with ChangellyOffer(name, iconUrl, data = data)
             }
-            val data = ChangellyOfferData(
-                rate,
-                amountTo,
-                currencyFrom,
-                currencyTo,
-            )
-            return@map ChangellyOffer(name, iconUrl, data = data)
-        }
+        }.sortedByDescending { it.data?.rate }
     }
 
     fun createOrder(
@@ -140,4 +158,9 @@ object ChangellyFiatRepository {
         FIAT("fiat"),
         CRYPTO("crypto"),
     }
+
+    private const val COUNTRY_ISO = "US" // United States
+    private const val US_STATE_ISO = "MO" // Missouri
+    private const val UNDEFINED_PROVIDER_NAME = "Undefined"
+    const val FAILED_PAYMENT_METHOD = "Failed"
 }
