@@ -139,6 +139,27 @@
                     app:constraint_referenced_ids="exchangeRateBackground,exchangeRateFrom,exchangeRateToValue,exchangeRateToCurrency"
                     tools:visibility="visible" />
 
+                <FrameLayout
+                    android:id="@+id/exchangeRateShimmer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:background="@drawable/bg_coin_value"
+                    app:layout_constraintBottom_toBottomOf="@id/exchangeRateBackground"
+                    app:layout_constraintStart_toStartOf="@id/exchangeRateBackground"
+                    app:layout_constraintTop_toTopOf="@id/exchangeRateBackground">
+
+                    <com.facebook.shimmer.ShimmerFrameLayout
+                        android:layout_width="280dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginHorizontal="16dp"
+                        android:layout_marginVertical="6dp"
+                        android:background="@drawable/shimmer_placeholder_rectangle"
+                        app:shimmer_base_alpha="1"
+                        app:shimmer_base_color="#3B3B3B"
+                        app:shimmer_colored="true"
+                        app:shimmer_highlight_color="#8D8D8D" />
+                </FrameLayout>
+
                 <include
                     android:id="@+id/buyLayout"
                     layout="@layout/layout_changelly2_coin_value"
@@ -176,7 +197,25 @@
                     android:layout_marginTop="12dp"
                     app:layout_constraintTop_toBottomOf="@id/offersTitle"
                     tools:listitem="@layout/buy_crypto_method_item"
-                    tools:orientation="horizontal" />
+                    tools:orientation="horizontal"
+                    tools:visibility="invisible" />
+
+                <LinearLayout
+                    android:id="@+id/methodsListShimmer"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:orientation="horizontal"
+                    app:layout_constraintBottom_toBottomOf="@id/methodsList"
+                    app:layout_constraintEnd_toEndOf="@id/methodsList"
+                    app:layout_constraintStart_toStartOf="@id/methodsList"
+                    app:layout_constraintTop_toTopOf="@id/methodsList">
+
+                    <include layout="@layout/buy_crypto_method_item_shimmer" />
+
+                    <include layout="@layout/buy_crypto_method_item_shimmer" />
+
+                    <include layout="@layout/buy_crypto_method_item_shimmer" />
+                </LinearLayout>
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/offersList"
@@ -189,6 +228,30 @@
                     app:layout_constraintTop_toBottomOf="@id/methodsList"
                     tools:listitem="@layout/buy_crypto_offer_item" />
 
+                <LinearLayout
+                    android:id="@+id/offersListShimmer"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:orientation="vertical"
+                    app:layout_constraintBottom_toBottomOf="@id/offersList"
+                    app:layout_constraintEnd_toEndOf="@id/offersList"
+                    app:layout_constraintStart_toStartOf="@id/offersList"
+                    app:layout_constraintTop_toTopOf="@id/offersList">
+
+                    <include layout="@layout/buy_crypto_offer_item_shimmer" />
+
+                    <include layout="@layout/buy_crypto_offer_item_shimmer" />
+
+                    <include layout="@layout/buy_crypto_offer_item_shimmer" />
+                </LinearLayout>
+
+                <androidx.constraintlayout.widget.Group
+                    android:id="@+id/shimmerGroup"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:visibility="gone"
+                    app:constraint_referenced_ids="exchangeRateShimmer,methodsListShimmer,offersListShimmer"
+                    tools:visibility="visible" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.core.widget.NestedScrollView>

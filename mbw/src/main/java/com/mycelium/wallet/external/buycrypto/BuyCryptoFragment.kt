@@ -157,11 +157,11 @@ class BuyCryptoFragment : Fragment(), BackListener {
             }
         }
         viewModel.isValid.observe(viewLifecycleOwner) {
-            viewModel.getMethodsWithDebounce()
+            if (!it) return@observe
+            viewModel.getMethods()
         }
         viewModel.methods.observe(viewLifecycleOwner) {
             if (it.isEmpty()) return@observe
-            binding.offersTitle.isVisible = true
             if (it.size == 1 && it.first().paymentMethod == FAILED_PAYMENT_METHOD) {
                 binding.exchangeGroup.isInvisible = true
                 binding.methodsList.isVisible = false
@@ -183,6 +183,18 @@ class BuyCryptoFragment : Fragment(), BackListener {
                 buyLayout.coinValue.text = it.amountExpectedTo ?: "0"
             }
         }
+        viewModel.isLoading.observe(viewLifecycleOwner) { loading ->
+            binding.apply {
+                if (loading) {
+                    buyLayout.coinValue.text = "0"
+                    methodsList.isInvisible = true
+                    binding.offersTitle.isVisible = true
+                }
+                offersList.isInvisible = loading
+                buyLayout.coinValueShimmer.isVisible = loading
+                shimmerGroup.isVisible = loading
+            }
+        }
     }
 
     private fun setupInputs() = binding.apply {
@@ -200,7 +212,6 @@ class BuyCryptoFragment : Fragment(), BackListener {
         sellLayout.coinValue.doOnTextChanged { text, _, _, _ ->
             viewModel.sellValue.value = text?.toString()
         }
-        buyLayout.coinValue
     }
 
     private fun setupRecycler() = binding.apply {

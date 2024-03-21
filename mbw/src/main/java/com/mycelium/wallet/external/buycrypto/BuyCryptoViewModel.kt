@@ -18,6 +18,7 @@ import com.mycelium.wallet.external.fiat.model.ChangellyMethod
 import com.mycelium.wapi.wallet.Util
 import com.mycelium.wapi.wallet.WalletAccount
 import com.mycelium.wapi.wallet.coins.CryptoCurrency
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 
@@ -50,6 +51,7 @@ class BuyCryptoViewModel(
     val buyValue = MutableLiveData<String>()
     val keyboardActive = MutableLiveData(false)
     val methods = MutableLiveData<List<ChangellyMethod>>()
+    val isLoading = MutableLiveData(false)
     val currentMethod = MutableLiveData<ChangellyMethod?>()
 
     init {
@@ -117,17 +119,24 @@ class BuyCryptoViewModel(
         currentMethod.value = method
     }
 
-    val getMethodsWithDebounce = Util.debounce(viewModelScope, { getMethods() })
-
-    private suspend fun getMethods() {
-        val currencyFrom = fromCurrency.value ?: return
-        val currencyTo = toCurrency.value?.symbol ?: return
-        val amountFrom = sellValue.value ?: return
+    private val getMethodsWithDebounce = Util.debounce(viewModelScope, {
+        val currencyFrom = fromCurrency.value ?: return@debounce
+        val currencyTo = toCurrency.value?.symbol ?: return@debounce
+        val amountFrom = sellValue.value ?: return@debounce
         try {
             val data = ChangellyFiatRepository.getMethods(currencyFrom, currencyTo, amountFrom)
             methods.value = data
         } catch (_: Exception) {
             // ignore http exception
+        } finally {
+            isLoading.value = false
+        }
+    })
+
+    fun getMethods() {
+        isLoading.value = true
+        viewModelScope.launch {
+            getMethodsWithDebounce()
         }
     }
 

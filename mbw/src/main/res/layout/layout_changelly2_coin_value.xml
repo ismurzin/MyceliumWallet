@@ -117,13 +117,13 @@
             android:id="@+id/coinValue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:hint="0"
+            android:minHeight="24sp"
             android:textColor="@color/white"
             android:textSize="24sp"
-            android:minHeight="24sp"
-            android:hint="0"
+            app:layout_constraintBaseline_toBaselineOf="@id/baseline"
             app:layout_constraintEnd_toStartOf="@id/coinIcon"
             app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintBaseline_toBaselineOf="@id/baseline"
             app:layout_constraintStart_toStartOf="@id/startGuidline"
             tools:text="0.2342345" />
 
@@ -220,11 +220,24 @@
             app:layout_constraintBaseline_toBaselineOf="@id/address"
             app:layout_constraintEnd_toEndOf="@id/endGuidline" />
 
+        <com.facebook.shimmer.ShimmerFrameLayout
+            android:id="@+id/coinValueShimmer"
+            android:layout_width="120dp"
+            android:layout_height="0dp"
+            android:background="@drawable/shimmer_placeholder_rectangle"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@id/coinValue"
+            app:layout_constraintStart_toStartOf="@id/coinValue"
+            app:layout_constraintTop_toTopOf="@id/coinValue"
+            app:shimmer_base_alpha="1"
+            app:shimmer_base_color="#3B3B3B"
+            app:shimmer_colored="true"
+            app:shimmer_highlight_color="#8D8D8D" />
+
         <androidx.constraintlayout.widget.Group
             android:id="@+id/accountGroup"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:constraint_referenced_ids="divider,layoutAccount,account,accountBalance,address">
-        </androidx.constraintlayout.widget.Group>
+            app:constraint_referenced_ids="divider,layoutAccount,account,accountBalance,address" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
