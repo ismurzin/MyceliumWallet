@@ -284,5 +284,16 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
+    <ProgressBar
+        android:id="@+id/confirmProgress"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:theme="@style/CircularProgressBar"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/confirm"
+        app:layout_constraintEnd_toEndOf="@id/confirm"
+        app:layout_constraintStart_toStartOf="@id/confirm"
+        app:layout_constraintTop_toTopOf="@id/confirm" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

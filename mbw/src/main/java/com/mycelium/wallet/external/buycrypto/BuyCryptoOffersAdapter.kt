@@ -47,6 +47,7 @@ class BuyCryptoOffersAdapter(
         val context = holder.binding.root.context
         val isBestOffer = position == 0 && data != null
         holder.binding.apply {
+            root.setOnClickListener { onItemSelected(offer) }
             providerName.text = offer.name
             bestOffer.isVisible = isBestOffer
             cardLayout.setBackgroundResource(
@@ -62,7 +63,6 @@ class BuyCryptoOffersAdapter(
                 )
                 .into(icon)
             if (data != null) {
-                root.setOnClickListener { onItemSelected(offer) }
                 rate.isVisible = true
                 errorTint.isVisible = false
                 rate.text = context.getString(

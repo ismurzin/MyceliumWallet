@@ -16,6 +16,7 @@ data class ChangellyMethod(
 data class ChangellyOffer(
     val name: String,
     val iconUrl: Uri? = null,
+    val providerCode: String,
     val data: ChangellyOfferData? = null,
     val error: OfferErrorType? = null,
 )
@@ -31,6 +32,7 @@ enum class OfferErrorType(@StringRes val messageId: Int) {
     MAX(R.string.buy_crypto_error_max),
     EXCHANGE_PAIR(R.string.buy_crypto_error_exchange),
     INVALID_OFFER(R.string.buy_crypto_error_invalid_offer),
+    UNAVAILABLE(R.string.buy_crypto_error_unavailable),
     UNEXPECTED(R.string.buy_crypto_error_unexpected);
 
     companion object {
@@ -38,12 +40,13 @@ enum class OfferErrorType(@StringRes val messageId: Int) {
             return when (response.errorType) {
                 "limits" -> {
                     val details = response.errorDetails?.firstOrNull() ?: return UNEXPECTED
-                    if (details.cause == "min") MIN
+                    if (details.cause == "min") return MIN
                     return MAX
                 }
 
                 "currency" -> EXCHANGE_PAIR
                 "invalidOffer" -> INVALID_OFFER
+                "unavailable" -> UNAVAILABLE
                 else -> UNEXPECTED
             }
         }

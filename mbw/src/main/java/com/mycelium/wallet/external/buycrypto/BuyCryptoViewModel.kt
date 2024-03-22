@@ -18,6 +18,7 @@ import com.mycelium.wallet.external.fiat.model.ChangellyMethod
 import com.mycelium.wapi.wallet.Util
 import com.mycelium.wapi.wallet.WalletAccount
 import com.mycelium.wapi.wallet.coins.CryptoCurrency
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -123,13 +124,16 @@ class BuyCryptoViewModel(
         val currencyFrom = fromCurrency.value ?: return@debounce
         val currencyTo = toCurrency.value?.symbol ?: return@debounce
         val amountFrom = sellValue.value ?: return@debounce
+        val amount = amountFrom.toDoubleOrNull()?.toString() ?: return@debounce
         try {
-            val data = ChangellyFiatRepository.getMethods(currencyFrom, currencyTo, amountFrom)
+            val data = ChangellyFiatRepository.getMethods(currencyFrom, currencyTo, amount)
             methods.value = data
-        } catch (_: Exception) {
-            // ignore http exception
-        } finally {
             isLoading.value = false
+        } catch (e: Exception) {
+            // ignore cancellation exception
+            if (e !is CancellationException) {
+                isLoading.value = false
+            }
         }
     })
 

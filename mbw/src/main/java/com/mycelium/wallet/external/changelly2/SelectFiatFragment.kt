@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.mycelium.wallet.R
@@ -12,14 +13,10 @@ import com.mycelium.wallet.external.fiat.model.ChangellyFiatCurrenciesResponse
 
 
 class SelectFiatFragment(
-    currencies: List<ChangellyFiatCurrenciesResponse>,
-    onSelect: (ChangellyFiatCurrenciesResponse) -> Unit,
+    private val currencies: List<ChangellyFiatCurrenciesResponse>,
+    private val onSelect: (ChangellyFiatCurrenciesResponse) -> Unit,
 ) : DialogFragment() {
 
-    private val fiatAdapter = CurrencyFiatAdapter(currencies) { item ->
-        onSelect(item)
-        dismissAllowingStateLoss()
-    }
     lateinit var binding: FragmentChangelly2SelectFiatBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,10 +36,36 @@ class SelectFiatFragment(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.toolbar.setNavigationOnClickListener { dismissAllowingStateLoss() }
-        binding.list.apply {
+        if (currencies.isEmpty()) {
+            binding.popularFiatsTitle.isVisible = false
+            binding.allSupportedFiatsTitle.isVisible = false
+            binding.noFunds.isVisible = true
+            return
+        }
+        setupAllSupportedFiats()
+        val popularFiats = getPopularFiats()
+        if (popularFiats.isEmpty()) {
+            binding.popularFiatsTitle.isVisible = false
+            return
+        }
+        setupPopularFiats(popularFiats)
+    }
+
+    private fun setupAllSupportedFiats() = binding.allSupportedFiats.apply {
+        layoutManager = LinearLayoutManager(requireContext())
+        adapter = CurrencyFiatAdapter(currencies) {
+            onSelect(it)
+            dismissAllowingStateLoss()
+        }
+    }
+
+    private fun setupPopularFiats(fiats: List<ChangellyFiatCurrenciesResponse>) {
+        binding.popularFiats.apply {
             layoutManager = LinearLayoutManager(requireContext())
-            adapter = fiatAdapter
-            itemAnimator = null
+            adapter = CurrencyFiatAdapter(fiats) {
+                onSelect(it)
+                dismissAllowingStateLoss()
+            }
         }
     }
 
@@ -52,5 +75,11 @@ class SelectFiatFragment(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT
         )
+    }
+
+    private fun getPopularFiats() = currencies.filter { popularFiats.contains(it.ticker) }
+
+    private companion object {
+        val popularFiats = listOf("USD", "EUR", "AED")
     }
 }

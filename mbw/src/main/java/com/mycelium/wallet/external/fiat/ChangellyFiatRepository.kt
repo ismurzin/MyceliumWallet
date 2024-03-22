@@ -1,5 +1,6 @@
 package com.mycelium.wallet.external.fiat
 
+import com.mrd.bitlib.lambdaworks.crypto.Base64
 import com.mycelium.bequant.remote.doRequest
 import com.mycelium.wallet.Utils
 import com.mycelium.wallet.external.fiat.api.ChangellyFiatRetrofitFactory
@@ -17,6 +18,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
+import kotlin.random.Random
 
 object ChangellyFiatRepository {
     private val api = ChangellyFiatRetrofitFactory.api
@@ -104,34 +106,32 @@ object ChangellyFiatRepository {
 
     private fun List<ChangellyFiatOffersResponse>.mapToChangellyOffers(): List<ChangellyOffer> {
         return map { response ->
-            val provider = providers.find { it.code == response.providerCode }
+            val code = response.providerCode
+            val provider = providers.find { it.code == code }
             if (provider == null) {
                 // error getting provider list - unexpected error
                 val error = OfferErrorType.UNEXPECTED
-                return@map ChangellyOffer(UNDEFINED_PROVIDER_NAME, null, error = error)
+                return@map ChangellyOffer(code, null, code, error = error)
             }
             val name = provider.name
             val iconUrl = Utils.tokenLogoPath(provider.code)
             return@map with(response) {
                 if (errorType != null || rate == null || invertedRate == null || amountExpectedTo == null) {
                     val error = OfferErrorType.fromResponse(response)
-                    return@with ChangellyOffer(name, iconUrl, error = error)
+                    return@with ChangellyOffer(name, iconUrl, code, error = error)
                 }
                 val data = ChangellyOfferData(rate, invertedRate, amountExpectedTo)
-                return@with ChangellyOffer(name, iconUrl, data = data)
+                return@with ChangellyOffer(name, iconUrl, code, data = data)
             }
         }.sortedByDescending { it.data?.rate }
     }
 
     fun createOrder(
         scope: CoroutineScope,
-        externalOrderId: String,
-        externalUserId: String,
         providerCode: String,
         currencyFrom: String,
         currencyTo: String,
         amountFrom: String,
-        country: String,
         walletAddress: String,
         paymentMethod: String,
         success: (ChangellyFiatOfferResponse?) -> Unit,
@@ -139,13 +139,14 @@ object ChangellyFiatRepository {
         finally: (() -> Unit)? = null,
     ) {
         val data = ChangellyFiatOfferRequest(
-            externalOrderId = externalOrderId,
-            externalUserId = externalUserId,
+            externalOrderId = getRandomBase64(),
+            externalUserId = getRandomBase64(),
             providerCode = providerCode,
             currencyFrom = currencyFrom,
             currencyTo = currencyTo,
             amountFrom = amountFrom,
-            country = country,
+            country = COUNTRY_ISO,
+            state = US_STATE_ISO,
             walletAddress = walletAddress,
             paymentMethod = paymentMethod,
         )
@@ -154,6 +155,8 @@ object ChangellyFiatRepository {
         }, success, error, finally)
     }
 
+    private fun getRandomBase64() = Base64.encodeToString(Random.nextBytes(32), false)
+
     enum class FiatCurrencyType(val value: String) {
         FIAT("fiat"),
         CRYPTO("crypto"),
@@ -161,6 +164,5 @@ object ChangellyFiatRepository {
 
     private const val COUNTRY_ISO = "US" // United States
     private const val US_STATE_ISO = "MO" // Missouri
-    private const val UNDEFINED_PROVIDER_NAME = "Undefined"
     const val FAILED_PAYMENT_METHOD = "Failed"
 }

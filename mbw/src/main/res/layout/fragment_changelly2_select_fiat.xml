@@ -15,44 +15,76 @@
         app:navigationIcon="@drawable/ic_back_arrow"
         app:title="Select fiat" />
 
-    <TextView
-        android:id="@+id/selectAccountLabel"
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:text="@string/buy_crypto_select_fiat_to_pay_with"
-        android:textColor="@color/fio_white_alpha_0_6"
-        android:textSize="14sp" />
+        android:layout_height="wrap_content">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/list"
-        style="@style/Giftbox"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:orientation="vertical"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        tools:listitem="@layout/item_giftbox_select_account" />
-
-    <LinearLayout
-        android:id="@+id/emptyList"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:orientation="vertical"
-        android:visibility="gone"
-        tools:visibility="visible">
-
-        <TextView
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="120dp"
-            android:gravity="center"
-            android:text="@string/no_funds"
-            android:textSize="22sp" />
+            android:layout_height="match_parent">
 
-    </LinearLayout>
+            <TextView
+                android:id="@+id/popularFiatsTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:text="@string/buy_crypto_popular_fiats"
+                android:textColor="@color/fio_white_alpha_0_6"
+                android:textSize="14sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/popularFiats"
+                style="@style/Giftbox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="vertical"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/popularFiatsTitle"
+                tools:itemCount="3"
+                tools:listitem="@layout/item_giftbox_select_account" />
+
+            <TextView
+                android:id="@+id/allSupportedFiatsTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="16dp"
+                android:text="@string/buy_crypto_all_supported_fiats"
+                android:textColor="@color/fio_white_alpha_0_6"
+                android:textSize="14sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/popularFiats" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/allSupportedFiats"
+                style="@style/Giftbox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="vertical"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/allSupportedFiatsTitle"
+                tools:listitem="@layout/item_giftbox_select_account" />
+
+
+            <TextView
+                android:id="@+id/noFunds"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/no_funds"
+                android:textSize="22sp"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
 </LinearLayout>

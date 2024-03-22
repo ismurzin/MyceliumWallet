@@ -1,9 +1,12 @@
 package com.mycelium.wallet.external.buycrypto.detailed
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.viewModels
 import com.bumptech.glide.Glide
@@ -11,6 +14,7 @@ import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.bumptech.glide.request.RequestOptions
 import com.mycelium.wallet.R
 import com.mycelium.wallet.Utils
+import com.mycelium.wallet.activity.modern.Toaster
 import com.mycelium.wallet.activity.util.toStringFriendlyWithUnit
 import com.mycelium.wallet.databinding.FragmentBuyCryptoDetailedBinding
 import com.mycelium.wallet.external.fiat.model.ChangellyMethod
@@ -48,6 +52,7 @@ class BuyCryptoDetailedFragment(
         setupPoweredBy()
         setupSelectedMethod()
         setupButtons()
+        setupObservers()
     }
 
     override fun onStart() {
@@ -104,5 +109,33 @@ class BuyCryptoDetailedFragment(
 
     private fun setupButtons() = binding.apply {
         back.setOnClickListener { dismiss() }
+        confirm.setOnClickListener {
+            val walletAddress =
+                receiveAccount.receiveAddress?.toString() ?: return@setOnClickListener
+            viewModel.createOrder(
+                offer.providerCode,
+                method.currencyFrom,
+                method.currencyTo,
+                this@BuyCryptoDetailedFragment.sendAmount,
+                walletAddress,
+                method.paymentMethod,
+                onSuccess = {
+                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it)))
+                    dismiss()
+                }
+            )
+        }
+    }
+
+    private fun setupObservers() = binding.apply {
+        viewModel.isLoading.observe(this@BuyCryptoDetailedFragment) {
+            back.isEnabled = !it
+            confirm.isEnabled = !it
+            confirm.text = if (it) "" else getString(R.string.buy_crypto_detailed_confirm)
+            confirmProgress.isVisible = it
+        }
+        viewModel.error.observe(this@BuyCryptoDetailedFragment) {
+            Toaster(requireContext()).toast(it, true)
+        }
     }
 }

@@ -102,6 +102,7 @@ class BuyCryptoFragment : Fragment(), BackListener {
                 inputTextView = sellLayout.coinValue
                 isVisible = true
                 setEntry(viewModel.sellValue.value ?: "")
+                maxDecimals = 2
             }
             viewModel.keyboardActive.value = true
         }
@@ -217,17 +218,19 @@ class BuyCryptoFragment : Fragment(), BackListener {
     }
 
     private fun setupRecycler() = binding.apply {
-        binding.offersList.layoutManager = LinearLayoutManager(requireContext())
-        binding.offersList.adapter = offersAdapter
-        binding.methodsList.adapter = methodsAdapter
-        binding.methodsList.layoutManager = LinearLayoutManager(
+        offersList.layoutManager = LinearLayoutManager(requireContext())
+        offersList.adapter = offersAdapter
+        methodsList.adapter = methodsAdapter
+        methodsList.layoutManager = LinearLayoutManager(
             requireContext(),
             LinearLayoutManager.HORIZONTAL,
             false,
         )
+        methodsList.itemAnimator = null
     }
 
     private fun selectOffer(offer: ChangellyOffer) {
+        if (offer.error != null) return
         val toAccount = viewModel.toAccount.value ?: return
         val sendAmount = viewModel.sellValue.value ?: return
         val method = viewModel.currentMethod.value ?: return
