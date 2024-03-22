@@ -292,6 +292,10 @@
         <item name="android:textColor">@color/button_blue_text_color</item>
     </style>
 
+    <style name="MyceliumButton.Transparent">
+        <item name="android:background">@drawable/btn_transparent</item>
+    </style>
+
     <style name="MyceliumText" parent="android:TextAppearance">
         <item name="android:textColor">#fff</item>
     </style>

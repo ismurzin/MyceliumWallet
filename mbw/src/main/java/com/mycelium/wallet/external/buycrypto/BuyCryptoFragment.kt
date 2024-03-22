@@ -27,9 +27,11 @@ import com.mycelium.wallet.event.ExchangeRatesRefreshed
 import com.mycelium.wallet.event.ExchangeSourceChanged
 import com.mycelium.wallet.event.PageSelectedEvent
 import com.mycelium.wallet.event.SelectedCurrencyChanged
+import com.mycelium.wallet.external.buycrypto.detailed.BuyCryptoDetailedFragment
 import com.mycelium.wallet.external.changelly2.SelectAccountFragment
 import com.mycelium.wallet.external.changelly2.SelectFiatFragment
 import com.mycelium.wallet.external.fiat.ChangellyFiatRepository.FAILED_PAYMENT_METHOD
+import com.mycelium.wallet.external.fiat.model.ChangellyOffer
 import com.squareup.otto.Subscribe
 
 
@@ -38,7 +40,7 @@ class BuyCryptoFragment : Fragment(), BackListener {
     private lateinit var binding: FragmentBuyCryptoBinding
     private val viewModel: BuyCryptoViewModel by viewModels()
     private val methodsAdapter by lazy { BuyCryptoMethodsAdapter(viewModel::selectMethod) }
-    private val offersAdapter by lazy { BuyCryptoOffersAdapter { } }
+    private val offersAdapter by lazy { BuyCryptoOffersAdapter(::selectOffer) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -223,6 +225,18 @@ class BuyCryptoFragment : Fragment(), BackListener {
             LinearLayoutManager.HORIZONTAL,
             false,
         )
+    }
+
+    private fun selectOffer(offer: ChangellyOffer) {
+        val toAccount = viewModel.toAccount.value ?: return
+        val sendAmount = viewModel.sellValue.value ?: return
+        val method = viewModel.currentMethod.value ?: return
+        BuyCryptoDetailedFragment(
+            receiveAccount = toAccount,
+            sendAmount = sendAmount,
+            method = method,
+            offer = offer,
+        ).show(parentFragmentManager, null)
     }
 
     @Subscribe
