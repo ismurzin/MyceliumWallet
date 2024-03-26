@@ -26,6 +26,7 @@ import com.mycelium.wallet.databinding.FragmentBuyCryptoBinding
 import com.mycelium.wallet.event.ExchangeRatesRefreshed
 import com.mycelium.wallet.event.ExchangeSourceChanged
 import com.mycelium.wallet.event.PageSelectedEvent
+import com.mycelium.wallet.event.SelectedAccountChanged
 import com.mycelium.wallet.event.SelectedCurrencyChanged
 import com.mycelium.wallet.external.buycrypto.detailed.BuyCryptoDetailedFragment
 import com.mycelium.wallet.external.changelly2.SelectAccountFragment
@@ -178,11 +179,12 @@ class BuyCryptoFragment : Fragment(), BackListener {
         viewModel.currentMethod.observe(viewLifecycleOwner) {
             if (it == null) return@observe
             offersAdapter.currentMethod = it
+            val formattedRate = "%.2f".format(it.invertedRate?.toDouble())
             binding.apply {
                 exchangeRateFrom.text =
-                    getString(R.string.buy_crypto_rate_currency_from, it.currencyFrom)
-                exchangeRateToCurrency.text = it.currencyTo
-                exchangeRateToValue.text = it.rate
+                    getString(R.string.buy_crypto_rate_currency_to, it.currencyTo)
+                exchangeRateToCurrency.text = it.currencyFrom
+                exchangeRateToValue.text = formattedRate
                 buyLayout.coinValue.text = it.amountExpectedTo ?: "0"
             }
         }
@@ -260,5 +262,10 @@ class BuyCryptoFragment : Fragment(), BackListener {
     @Subscribe
     fun pageSelectedEvent(event: PageSelectedEvent) {
         binding.layoutValueKeyboard.numericKeyboard.done()
+    }
+
+    @Subscribe
+    fun selectedAccountChanged(event: SelectedAccountChanged) {
+        viewModel.refreshReceiveAccount()
     }
 }

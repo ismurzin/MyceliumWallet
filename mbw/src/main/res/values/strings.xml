@@ -1860,7 +1860,7 @@ All new bitcoins, mined by the pool, are proportionally distributed among RMC bi
     <string name="buy_crypto_rate">≈ %s %s</string>
     <string name="buy_crypto_amount">%s %s</string>
     <string name="buy_crypto_offer_title">Offers</string>
-    <string name="buy_crypto_rate_currency_from">1 %s ≈  </string>
+    <string name="buy_crypto_rate_currency_to">1 %s ≈  </string>
     <string name="buy_crypto_error_min">Amount is too small</string>
     <string name="buy_crypto_error_max">Amount is too big</string>
     <string name="buy_crypto_error_exchange">Unsupported exchange pair</string>

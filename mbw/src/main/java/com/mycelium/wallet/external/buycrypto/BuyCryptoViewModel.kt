@@ -124,7 +124,7 @@ class BuyCryptoViewModel(
         val currencyFrom = fromCurrency.value ?: return@debounce
         val currencyTo = toCurrency.value?.symbol ?: return@debounce
         val amountFrom = sellValue.value ?: return@debounce
-        val amount = amountFrom.toDoubleOrNull()?.toString() ?: return@debounce
+        val amount = amountFrom.toBigDecimalOrNull()?.toString() ?: return@debounce
         try {
             val data = ChangellyFiatRepository.getMethods(currencyFrom, currencyTo, amount)
             methods.value = data
@@ -144,13 +144,11 @@ class BuyCryptoViewModel(
         }
     }
 
-
-    private fun getToAccountForInit() = Utils.sortAccounts(
-        mbwManager.getWalletManager(false)
-            .getAllActiveAccounts(), mbwManager.metadataStorage
-    ).firstOrNull {
-        isSupported(it.coinType)
-    }
+    private fun getToAccountForInit() =
+        if (isSupported(mbwManager.selectedAccount.coinType)) mbwManager.selectedAccount
+        else mbwManager.getWalletManager(false)
+            .getAllActiveAccounts()
+            .firstOrNull { it.canSpend() && isSupported(it.coinType) }
 
     private fun isValid(): Boolean {
         return try {
@@ -164,6 +162,12 @@ class BuyCryptoViewModel(
         } catch (e: java.lang.NumberFormatException) {
             false
         }
+    }
+
+    fun refreshReceiveAccount() {
+        if (!mbwManager.selectedAccount.canSpend()) return
+        if (!isSupported(mbwManager.selectedAccount.coinType)) return
+        toAccount.value = mbwManager.selectedAccount
     }
 
     companion object {

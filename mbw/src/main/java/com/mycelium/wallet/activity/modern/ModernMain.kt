@@ -200,6 +200,9 @@ class ModernMain : AppCompatActivity(), BackHandler {
             MainActions.ACTION_EXCHANGE.toLowerCase(), MainActions.ACTION_EXCHANGE -> {
                 selectTab(TAB_EXCHANGE)
             }
+            MainActions.ACTION_BUY_CRYPTO -> {
+                selectTab(TAB_BUY_CRYPTO)
+            }
             MainActions.ACTION_BALANCE -> {
                 selectTab(TAB_BALANCE)
             }

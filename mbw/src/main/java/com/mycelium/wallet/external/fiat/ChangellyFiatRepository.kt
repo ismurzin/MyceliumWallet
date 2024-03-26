@@ -77,6 +77,7 @@ object ChangellyFiatRepository {
                     currencyFrom = currencyFrom,
                     currencyTo = currencyTo,
                     rate = null,
+                    invertedRate = null,
                     amountExpectedTo = null,
                     offers = offers.mapToChangellyOffers(),
                 )
@@ -96,8 +97,9 @@ object ChangellyFiatRepository {
                 paymentMethod = method,
                 currencyFrom = currencyFrom,
                 currencyTo = currencyTo,
-                rate = bestOffer?.rate,
                 amountExpectedTo = bestOffer?.amountExpectedTo,
+                rate = bestOffer?.rate,
+                invertedRate = bestOffer?.invertedRate,
                 offers = mappedOffers,
             )
         }

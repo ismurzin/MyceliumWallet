@@ -10,6 +10,7 @@ data class ChangellyMethod(
     val currencyTo: String,
     val amountExpectedTo: String?,
     val rate: String?,
+    val invertedRate: String?,
     val offers: List<ChangellyOffer> = emptyList(),
 )
 
