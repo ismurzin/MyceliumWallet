@@ -1878,4 +1878,12 @@ All new bitcoins, mined by the pool, are proportionally distributed among RMC bi
     <string name="buy_crypto_detailed_confirm">Confirm</string>
     <string name="buy_crypto_detailed_rate">1 %s ≈ %s %s</string>
     <string name="buy_crypto_mycelium_marketplace">Marketplace</string>
+    <string name="tab_vip">VIP</string>
+    <string name="vip_code_hint">Enter VIP code</string>
+    <string name="apply_vip_code">Apply</string>
+    <string name="vip_code_invalid">Code is not valid</string>
+    <string name="vip_code_active">VIP code is active</string>
+    <string name="vip_title">Get the VIP experience</string>
+    <string name="vip_title_welcome">Welcome to the VIP club</string>
+    <string name="vip_description">Enter the VIP code and get privileges</string>
 </resources>
