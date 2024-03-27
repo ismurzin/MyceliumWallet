@@ -42,10 +42,13 @@ import androidx.fragment.app.Fragment
 import com.mycelium.view.ItemCentralizer
 import com.mycelium.wallet.MbwManager
 import com.mycelium.wallet.R
+import com.mycelium.wallet.Utils
 import com.mycelium.wallet.activity.main.adapter.ButtonAdapter
 import com.mycelium.wallet.activity.main.adapter.ButtonClickListener
 import com.mycelium.wallet.activity.main.adapter.QuadAdsAdapter
 import com.mycelium.wallet.activity.main.model.ActionButton
+import com.mycelium.wallet.activity.modern.Toaster
+import com.mycelium.wallet.activity.modern.helper.MainActions
 import com.mycelium.wallet.activity.settings.SettingsPreference.fioEnabled
 import com.mycelium.wallet.activity.settings.SettingsPreference.getBalanceContent
 import com.mycelium.wallet.activity.settings.SettingsPreference.isContentEnabled
@@ -56,6 +59,7 @@ import com.mycelium.wallet.external.Ads.openFio
 import com.mycelium.wallet.external.partner.model.BuySellButton
 import com.mycelium.wallet.external.partner.model.check
 import com.mycelium.wallet.external.partner.startContentLink
+import com.mycelium.wallet.lt.activity.LtMainActivity
 import com.mycelium.wapi.wallet.eth.AbstractEthERC20Account
 import com.squareup.otto.Subscribe
 
@@ -119,14 +123,31 @@ class BuySellFragment : Fragment(), ButtonClickListener {
                 it.isActive() && isContentEnabled(it.parentId ?: "")
                         && it.filter.check(mbwManager.selectedAccount)
             }
-            .sortedBy { it.index }
             .map {
-                ActionButton(ACTION.ADS, handleName(it.name) ?: "", 0, it.iconUrl,
-                    Bundle().apply {
-                        putSerializable("data", it)
-                        putInt("index", it.index ?: Int.MAX_VALUE)
-                    })
-            })
+                val name = handleName(it.name) ?: ""
+                val args = Bundle().apply {
+                    putSerializable("data", it)
+                    putInt("index", it.index ?: Int.MAX_VALUE)
+                }
+                val actionType = ActionButton.ActionType.fromName(name)
+                ActionButton(ACTION.ADS, name, 0, it.iconUrl, args, actionType)
+            }
+        )
+        val selectedCoin = mbwManager.selectedAccount.coinType.symbol
+        if (selectedCoin.equals("btc", ignoreCase = true)) {
+            val name = getString(R.string.buy_crypto_mycelium_marketplace)
+            val actionType = ActionButton.ActionType.fromName(name)
+            actions.add(
+                ActionButton(
+                    ACTION.ADS,
+                    name,
+                    R.drawable.ic_balance_mycelium_marketplace,
+                    null,
+                    actionType = actionType
+                )
+            )
+        }
+        actions.sortBy { it.actionType?.ordinal }
     }
 
     private fun handleName(name: String?) =
@@ -135,21 +156,61 @@ class BuySellFragment : Fragment(), ButtonClickListener {
 
     private fun addFio(actions: MutableList<ActionButton>) {
         if (fioEnabled) {
-            actions.add(ActionButton(ACTION.FIO, getString(R.string.partner_fiopresale), R.drawable.ic_fiopresale_icon_small))
+            actions.add(
+                ActionButton(
+                    ACTION.FIO,
+                    getString(R.string.partner_fiopresale),
+                    R.drawable.ic_fiopresale_icon_small
+                )
+            )
         }
     }
 
     override fun onClick(actionButton: ActionButton) {
         when (actionButton.id) {
             ACTION.FIO -> openFio(requireContext())
-            ACTION.ADS -> if (actionButton.args.containsKey("data")) {
-                (actionButton.args.getSerializable("data") as BuySellButton?)?.let { data ->
-                    startContentLink(data.link, Bundle().apply {
-                        putSerializable("currency", mbwManager.selectedAccount.coinType)
-                    })
+            ACTION.ADS -> {
+                when (actionButton.actionType) {
+                    ActionButton.ActionType.MARKETPLACE -> openMarketplace()
+                    ActionButton.ActionType.EXCHANGE -> toExchange(actionButton.args)
+                    ActionButton.ActionType.BUY_SELL -> toBuyCrypto()
                 }
             }
         }
+    }
+
+    private fun openMarketplace() {
+        val toaster = Toaster(requireContext())
+        val selectedAccount = mbwManager.getSelectedAccount()
+        if (!selectedAccount.canSpend()) {
+            toaster.toast(R.string.lt_warning_watch_only_account, false)
+            return
+        }
+        if (!Utils.isAllowedForLocalTrader(selectedAccount)) {
+            toaster.toast(R.string.lt_warning_wrong_account_type, false)
+            return
+        }
+        val ltManager = mbwManager.localTraderManager
+        val newActivity =
+            ltManager.hasLocalTraderAccount() && ltManager.needsTraderSynchronization()
+        val tabToSelect =
+            if (newActivity) LtMainActivity.TAB_TYPE.ACTIVE_TRADES
+            else LtMainActivity.TAB_TYPE.DEFAULT
+        LtMainActivity.callMe(requireContext(), tabToSelect)
+    }
+
+    private fun toExchange(args: Bundle) {
+        if (!args.containsKey("data")) return
+        val data = args.getSerializable("data") as BuySellButton? ?: return
+        val destinationArgs = Bundle().apply {
+            putSerializable("currency", mbwManager.selectedAccount.coinType)
+        }
+        startContentLink(data.link, destinationArgs)
+    }
+
+    private fun toBuyCrypto() {
+        val link = "${MainActions.PREFIX}${MainActions.ACTION_BUY_CRYPTO}"
+        startContentLink(link)
     }
 
     internal inner class ScrollToRunner(var scrollTo: Int) : Runnable {

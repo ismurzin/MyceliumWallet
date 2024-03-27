@@ -45,7 +45,7 @@ class BuyCryptoViewModel(
     private val preferences =
         application.getSharedPreferences(PREFERENCE_FILE, Context.MODE_PRIVATE)
 
-    private var cryptoCurrencies = emptySet<String>()
+    private var cryptoCurrencies = setOf("btc", "eth")
     var fiatCurrencies = emptyList<ChangellyFiatCurrenciesResponse>()
         private set
 

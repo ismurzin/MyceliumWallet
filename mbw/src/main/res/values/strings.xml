@@ -1877,4 +1877,5 @@ All new bitcoins, mined by the pool, are proportionally distributed among RMC bi
     <string name="buy_crypto_detailed_back">Back</string>
     <string name="buy_crypto_detailed_confirm">Confirm</string>
     <string name="buy_crypto_detailed_rate">1 %s ≈ %s %s</string>
+    <string name="buy_crypto_mycelium_marketplace">Marketplace</string>
 </resources>
