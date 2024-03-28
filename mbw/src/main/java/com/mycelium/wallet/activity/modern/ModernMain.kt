@@ -378,6 +378,7 @@ class ModernMain : AppCompatActivity(), BackHandler {
         }
         inflater.inflate(R.menu.giftbox, menu)
         inflater.inflate(R.menu.exchange_changelly2, menu)
+        inflater.inflate(R.menu.account_menu_vip, menu)
         return true
     }
 
@@ -420,6 +421,7 @@ class ModernMain : AppCompatActivity(), BackHandler {
         Preconditions.checkNotNull(menu.findItem(R.id.miAddAddress)).isVisible = isAddressBook
         Preconditions.checkNotNull(menu.findItem(R.id.miGiftBox)).isVisible = isContentEnabled(GiftboxConstants.PARTNER_ID)
         Preconditions.checkNotNull(menu.findItem(R.id.history)).isVisible = isContentEnabled(ChangellyConstants.PARTNER_ID_CHANGELLY)
+        Preconditions.checkNotNull(menu.findItem(R.id.miVip)).isVisible = isAccountTab
         return super.onPrepareOptionsMenu(menu)
     }
 
@@ -482,6 +484,10 @@ class ModernMain : AppCompatActivity(), BackHandler {
                 }
                 R.id.history -> {
                     HistoryFragment().show(supportFragmentManager, ExchangeFragment.TAG_HISTORY)
+                    true
+                }
+                R.id.miVip -> {
+                    selectTab(TAB_VIP)
                     true
                 }
                 else -> super.onOptionsItemSelected(item)
