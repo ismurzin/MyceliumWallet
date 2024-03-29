@@ -2,6 +2,7 @@ package com.mycelium.wallet.activity.modern.vip
 
 import android.app.Activity
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -109,6 +110,6 @@ class VipFragment : Fragment() {
     }
 
     private companion object {
-        const val VIP_FRAGMENT_POSITION = 6
+        const val VIP_FRAGMENT_POSITION = 7
     }
 }
