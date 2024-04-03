@@ -19,6 +19,9 @@ import com.mycelium.wapi.wallet.Util
 import com.mycelium.wapi.wallet.WalletAccount
 import com.mycelium.wapi.wallet.coins.CryptoCurrency
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -120,7 +123,7 @@ class BuyCryptoViewModel(
         currentMethod.value = method
     }
 
-    private val getMethodsWithDebounce = Util.debounce(viewModelScope, {
+    private val getMethodsWithDebounce = debounce(viewModelScope, {
         val currencyFrom = fromCurrency.value ?: return@debounce
         val currencyTo = toCurrency.value?.symbol ?: return@debounce
         val amountFrom = sellValue.value ?: return@debounce
@@ -168,6 +171,25 @@ class BuyCryptoViewModel(
         if (!mbwManager.selectedAccount.canSpend()) return
         if (!isSupported(mbwManager.selectedAccount.coinType)) return
         toAccount.value = mbwManager.selectedAccount
+    }
+
+    private fun debounce(
+        scope: CoroutineScope,
+        destinationFunction: suspend () -> Unit,
+        delay: Long = 1000L,
+        exceptionHandler: CoroutineExceptionHandler? = null,
+    ): () -> Unit {
+        var debounceJob: Job? = null
+        val job = suspend {
+            kotlinx.coroutines.delay(delay)
+            destinationFunction()
+        }
+        return {
+            debounceJob?.cancel()
+            debounceJob =
+                if (exceptionHandler != null) scope.launch(exceptionHandler) { job() }
+                else scope.launch { job() }
+        }
     }
 
     companion object {

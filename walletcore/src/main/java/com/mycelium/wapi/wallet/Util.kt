@@ -4,10 +4,6 @@ import com.mrd.bitlib.model.NetworkParameters
 import com.mycelium.wapi.wallet.coins.AssetInfo
 import com.mycelium.wapi.wallet.coins.SYMBOL_COIN_MAP
 import com.mycelium.wapi.wallet.coins.Value
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.text.SimpleDateFormat
@@ -87,23 +83,4 @@ object Util {
         time = expirationDate
         add(Calendar.DAY_OF_MONTH, 365)
     }.time
-
-    fun debounce(
-        scope: CoroutineScope,
-        destinationFunction: suspend () -> Unit,
-        delay: Long = 1000L,
-        exceptionHandler: CoroutineExceptionHandler? = null,
-    ): () -> Unit {
-        var debounceJob: Job? = null
-        val job = suspend {
-            kotlinx.coroutines.delay(delay)
-            destinationFunction()
-        }
-        return {
-            debounceJob?.cancel()
-            debounceJob =
-                if (exceptionHandler != null) scope.launch(exceptionHandler) { job() }
-                else scope.launch { job() }
-        }
-    }
 }

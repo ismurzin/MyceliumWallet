@@ -35,7 +35,6 @@ import com.mycelium.wallet.external.fiat.ChangellyFiatRepository.FAILED_PAYMENT_
 import com.mycelium.wallet.external.fiat.model.ChangellyOffer
 import com.squareup.otto.Subscribe
 
-
 class BuyCryptoFragment : Fragment(), BackListener {
 
     private lateinit var binding: FragmentBuyCryptoBinding
