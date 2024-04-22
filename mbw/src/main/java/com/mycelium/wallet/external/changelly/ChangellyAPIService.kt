@@ -73,7 +73,6 @@ interface ChangellyAPIService {
         @Query("to") to: String,
     ): Response<ChangellyListResponse<FixRate>>
 
-
     @POST("createFixTransaction")
     suspend fun createFixTransaction(
         @Query("from") from: String,
@@ -94,7 +93,6 @@ interface ChangellyAPIService {
     suspend fun getTransactions(
         @Query("id") id: List<String>,
     ): Response<ChangellyResponse<List<ChangellyTransaction>>>
-
 
     companion object {
         const val BCH = "BCH"

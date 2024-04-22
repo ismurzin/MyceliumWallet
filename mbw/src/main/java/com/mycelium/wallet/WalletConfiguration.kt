@@ -597,7 +597,7 @@ class WalletConfiguration(private val prefs: SharedPreferences,
             TokenData("yearn.finance", "YFI", 18, "0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e"),
             TokenData("The Graph", "GRT", 18, "0xc944E90C64B2c07662A292be6244BDf05Cda44a7"),
             TokenData("Civic", "CVC", 8, "0x41e5560054824eA6B0732E656E3Ad64E20e94E45"),
-            TokenData("Gala", "GALA", 8, "0x15D4c048F83bd7e37d49eA4C83a07267Ec4203dA"),
+            TokenData("Gala", "GALA", 8, "0xd1d2eb1b1e90b638588728b4130137d262c87cae"),
             TokenData("Illuvium", "ILV", 18, "0x767FE9EDC9E0dF98E07454847909b5E959D7ca0E"),
             TokenData("SushiToken", "SUSHI", 18, "0x6B3595068778DD592e39A122f4f5a5cF09C90fE2"),
             TokenData("1INCH Token", "1INCH", 18, "0x111111111117dC0aa78b770fA6A738034120C302"),
@@ -611,7 +611,9 @@ class WalletConfiguration(private val prefs: SharedPreferences,
             TokenData("Request", "REQ", 18, "0x8f8221afbb33998d8584a2b05749ba73c37a938a"),
             TokenData("UMA", "UMA", 18, "0x04Fa0d235C4abf4BcF4787aF4CF447DE572eF828"),
             TokenData("Viberate", "vib", 18, "0x2C974B2d0BA1716E644c1FC59982a89DDD2fF724"),
+            TokenData("PancakeSwap Token", "CAKE", 18, "0x152649eA73beAb28c5b49B26eb48f7EAD6d4c898"),
             TokenData("district0x", "dnt", 18, "0x0abdace70d3790235af448c88547603b945604ea")
+
         )
     }
 }

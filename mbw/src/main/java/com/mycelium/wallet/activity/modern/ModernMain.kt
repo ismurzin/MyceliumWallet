@@ -17,7 +17,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.tabs.TabLayout
 import com.google.common.base.Preconditions
-import com.mycelium.bequant.remote.repositories.Api
 import com.mycelium.giftbox.GiftBoxRootActivity
 import com.mycelium.giftbox.client.GiftboxConstants
 import com.mycelium.net.ServerEndpointType
@@ -53,6 +52,7 @@ import com.mycelium.wallet.external.buycrypto.BuyCryptoFragment
 import com.mycelium.wallet.external.changelly.ChangellyConstants
 import com.mycelium.wallet.external.changelly2.ExchangeFragment
 import com.mycelium.wallet.external.changelly2.HistoryFragment
+import com.mycelium.wallet.external.changelly2.remote.Api
 import com.mycelium.wallet.external.mediaflow.NewsConstants
 import com.mycelium.wallet.fio.FioRequestNotificator
 import com.mycelium.wallet.modularisation.ModularisationVersionHelper
@@ -65,6 +65,7 @@ import com.mycelium.wapi.wallet.manager.State
 import com.squareup.otto.Subscribe
 import info.guardianproject.netcipher.proxy.OrbotHelper
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -165,7 +166,7 @@ class ModernMain : AppCompatActivity(), BackHandler {
         lifecycleScope.launchWhenResumed {
             ChangeLog.showIfNewVersion(this@ModernMain, supportFragmentManager)
         }
-        lifecycleScope.launchWhenStarted {
+        lifecycleScope.launch {
             userRepository.identify()
             userRepository.userFlow.collect { user ->
                 val icon =

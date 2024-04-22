@@ -102,7 +102,12 @@ class BuySellFragment : Fragment(), ButtonClickListener {
         binding?.quadList?.adapter = quadAdapter
         binding?.quadList?.addOnScrollListener(ItemCentralizer())
         recreateActions()
-        quadAdapter.submitList(getBalanceContent()?.quads?.sortedBy { it.index })
+        quadAdapter.submitList(getBalanceContent()
+            ?.quads
+            ?.filter {
+                it.isActive() && isContentEnabled(it.parentId ?: "")
+                        && it.filter.check(mbwManager.selectedAccount)
+            }?.sortedBy { it.index })
         quadAdapter.clickListener = { startContentLink(it.link) }
     }
 

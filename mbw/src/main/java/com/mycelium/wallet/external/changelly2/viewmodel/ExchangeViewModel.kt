@@ -59,7 +59,7 @@ class ExchangeViewModel(application: Application) : AndroidViewModel(application
     var changellyTx: String? = null
     var swapDirection = 0
 
-    val swapEnableDelay = MutableLiveData<Boolean>(false)
+    val swapEnableDelay = MutableLiveData(false)
     val swapEnabled = MediatorLiveData<Boolean>().apply {
         value = false
         fun update() {

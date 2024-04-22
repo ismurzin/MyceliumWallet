@@ -1825,7 +1825,7 @@ All new bitcoins, mined by the pool, are proportionally distributed among RMC bi
                         BTC-Pay Server, the wallet checking only 20 future addresses beyond
                         your last unused address might not find those transactions. <b>Press
                         "Boost Gap Limit"</b> below to check if this is the case. This will check
-                        for 200 addresses on all active accounts once.?]]></string>
+                        for 200 addresses on all active accounts once.]]></string>
     <string name="boost_gap_limit">Boost Gap Limit</string>
     <string name="help_share_logs_text">We get your logs only if you share them with us. Logs do not contain personal information.</string>
     <string name="missing_tx_text">Most common cases of missing coins and how it can be resolved.</string>
@@ -1878,10 +1878,12 @@ All new bitcoins, mined by the pool, are proportionally distributed among RMC bi
     <string name="buy_crypto_detailed_confirm">Confirm</string>
     <string name="buy_crypto_detailed_rate">1 %s ≈ %s %s</string>
     <string name="buy_crypto_mycelium_marketplace">Marketplace</string>
+    <string name="batch">Batch</string>
+    <string name="add_all_receiving_addresses_and_amounts">Add all receiving addresses and amounts</string>
     <string name="tab_vip">VIP</string>
     <string name="vip_code_hint">Enter your personal VIP code</string>
     <string name="vip_code_who_can_get_title">Who is eligible for VIP status</string>
-    <string name="vip_code_who_can_get">Old Mycelium users\nMycelium token holders\nSU7 Max giveaway participants\nLoyal MyceIium users who received personal\ninvitation</string>
+    <string name="vip_code_who_can_get">Mycelium token holders\nSU7 Max giveaway participants\nLoyal MyceIium users who received а personal\ninvitation</string>
     <string name="vip_code_granted_status">You have been granted Mycelium VIP status.</string>
     <string name="vip_code_discount_title">Discounts on crypto to crypto swaps</string>
     <string name="vip_code_discount_description">The exchange commission is reduced by 25%.</string>

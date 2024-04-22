@@ -31,7 +31,11 @@ import java.util.regex.Pattern
 
 
 open class SendBtcViewModel(application: Application) : SendCoinsViewModel(application) {
+
+    override val isBatchable: Boolean
+        get() = true
     override val uriPattern =  Pattern.compile("[a-zA-Z0-9]+")!!
+
 
     override fun init(account: WalletAccount<*>, intent: Intent) {
         super.init(account, intent)

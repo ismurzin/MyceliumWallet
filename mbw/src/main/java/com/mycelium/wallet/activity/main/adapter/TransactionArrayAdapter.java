@@ -36,10 +36,11 @@ import java.util.Map;
 import java.util.Set;
 
 import static android.content.Context.MODE_PRIVATE;
-import static com.mycelium.wallet.external.changelly.bch.ExchangeFragment.BCH_EXCHANGE;
-import static com.mycelium.wallet.external.changelly.bch.ExchangeFragment.BCH_EXCHANGE_TRANSACTIONS;
+import static com.mycelium.wallet.activity.send.SendCoinsActivity.BATCH_HASH_PREFIX;
 
 public class TransactionArrayAdapter extends ArrayAdapter<TransactionSummary> {
+   public static final String BCH_EXCHANGE = "bch_exchange";
+   public static final String BCH_EXCHANGE_TRANSACTIONS = "bch_exchange_transactions";
    private final MetadataStorage _storage;
    protected Context _context;
    private DateFormat _dateFormat;
@@ -134,6 +135,9 @@ public class TransactionArrayAdapter extends ArrayAdapter<TransactionSummary> {
 
       TextView tvFiatTimed = rowView.findViewById(R.id.tvFiatAmountTimed);
       String value = transactionFiatValuePref.getString(record.getIdHex(), null);
+      if (value == null && !record.isIncoming()) {
+         value = transactionFiatValuePref.getString(BATCH_HASH_PREFIX + record.getIdHex(), null);
+      }
       boolean showFiatTimed = value != null && !TransactionSummaryKt.isMinerFeeTx(record, _mbwManager.getSelectedAccount());
       tvFiatTimed.setVisibility(showFiatTimed ? View.VISIBLE : View.GONE);
       if (value != null) {

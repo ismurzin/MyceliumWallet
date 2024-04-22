@@ -25,6 +25,7 @@ import com.mycelium.wallet.activity.send.BroadcastDialog
 import com.mycelium.wallet.activity.send.ManualAddressEntry
 import com.mycelium.wallet.activity.send.SendCoinsActivity
 import com.mycelium.wallet.activity.send.VerifyPaymentRequestActivity
+import com.mycelium.wallet.activity.send.adapter.BatchItem
 import com.mycelium.wallet.activity.util.*
 import com.mycelium.wallet.content.ResultType
 import com.mycelium.wallet.event.SyncFailed
@@ -54,6 +55,9 @@ import com.squareup.otto.Subscribe
 import org.bitcoin.protocols.payments.PaymentACK
 import java.util.*
 import java.util.regex.Pattern
+import kotlin.reflect.jvm.internal.ReflectProperties.Val
+
+
 
 abstract class SendCoinsViewModel(application: Application) : AndroidViewModel(application) {
     val context: Context = application
@@ -69,6 +73,8 @@ abstract class SendCoinsViewModel(application: Application) : AndroidViewModel(a
     abstract val uriPattern: Pattern
     private var receivingAcc: UUID? = null
     private var xpubSyncing: Boolean = false
+
+    open val isBatchable = false
 
     // As ottobus does not support inheritance listener should be incapsulated into an object
     private val eventListener = object : Any() {
@@ -120,7 +126,7 @@ abstract class SendCoinsViewModel(application: Application) : AndroidViewModel(a
         MbwManager.getEventBus().register(eventListener)
     }
 
-    abstract fun sendTransaction(activity: Activity)
+    abstract fun        sendTransaction(activity: Activity)
 
     protected fun sendFioObtData() {
         // TODO: 10/7/20 redesign the whole process to have the viewModel around until after the
@@ -187,6 +193,9 @@ abstract class SendCoinsViewModel(application: Application) : AndroidViewModel(a
 
     val fioMemo get() = model.fioMemo
 
+    val isBatch get() = model.isBatch
+    val outputList get() = model.outputList
+
     fun getRecipientRepresentation() = model.recipientRepresentation
 
     enum class RecipientRepresentation {
@@ -243,8 +252,14 @@ abstract class SendCoinsViewModel(application: Application) : AndroidViewModel(a
     fun getGenericUri() = model.genericUri
 
     fun getFiatValue(): String? {
-        val fiat = mbwManager.exchangeRateManager.get(model.amount.value,
-                mbwManager.currencySwitcher.getCurrentFiatCurrency(model.account.coinType))
+        val fiat = mbwManager.exchangeRateManager.get(
+            if (isBatch.value == true) {
+                model.outputList.value?.mapNotNull { it.crypto }?.sumOf()
+            } else {
+                model.amount.value
+            },
+            mbwManager.currencySwitcher.getCurrentFiatCurrency(model.account.coinType)
+        )
         return fiat?.toStringWithUnit()
     }
 
@@ -304,31 +319,47 @@ abstract class SendCoinsViewModel(application: Application) : AndroidViewModel(a
         }
     }
 
-    fun onClickClipboard() {
+    @JvmOverloads
+    fun onClickClipboard(item: BatchItem? = null) {
         val uri = model.clipboardUri.value ?: return
         activity?.let {
             makeText(it, context.getString(R.string.using_address_from_clipboard), LENGTH_SHORT).show()
         }
-        model.receivingAddress.value = uri.address
-        if (uri.value != null && !uri.value!!.isNegative()) {
-            model.amount.value = uri.value
+        if (item != null) {
+            updateItem(item.copy(address = uri.address, crypto = uri.value))
+        } else {
+            model.receivingAddress.value = uri.address
+            if (uri.value != null && !uri.value!!.isNegative()) {
+                model.amount.value = uri.value
+            }
         }
     }
 
     open fun processReceivedResults(requestCode: Int, resultCode: Int, data: Intent?, activity: Activity) {
-        if (requestCode == SendCoinsActivity.GET_AMOUNT_RESULT_CODE && resultCode == Activity.RESULT_OK) {
+        if (0x0000ff and requestCode == SendCoinsActivity.GET_AMOUNT_RESULT_CODE && resultCode == Activity.RESULT_OK) {
             if (data?.getBooleanExtra(GetAmountActivity.EXIT_TO_MAIN_SCREEN, false) == true) {
                 activity.setResult(Activity.RESULT_CANCELED)
                 activity.finish()
             } else {
                 // Get result from AmountEntry
                 val enteredAmount = data?.getSerializableExtra(GetAmountActivity.AMOUNT) as Value?
-                model.amount.value = enteredAmount ?: Value.zeroValue(model.account.coinType)
+                val batchIndex = requestCode.shr(10)
+                val value = enteredAmount ?: Value.zeroValue(model.account.coinType)
+                if (batchIndex != 0) {
+                    val item = model.outputList.value?.get(batchIndex - 1)!!
+                    updateItem(item.copy(crypto = value))
+                } else {
+                    model.amount.value = enteredAmount ?: Value.zeroValue(model.account.coinType)
+                }
             }
-        } else if (requestCode == SendCoinsActivity.SCAN_RESULT_CODE) {
-            handleScanResults(resultCode, data, activity)
-        } else if (requestCode == SendCoinsActivity.ADDRESS_BOOK_RESULT_CODE && resultCode == Activity.RESULT_OK) {
-            handleAddressBookResults(data)
+        } else if (0x0000ff and requestCode == SendCoinsActivity.SCAN_RESULT_CODE) {
+            val batchIndex = requestCode.shr(10)
+            val item = model.outputList.value?.getOrNull(batchIndex - 1)
+            handleScanResults(resultCode, data, activity, item)
+        } else if (0x0000ff and requestCode == SendCoinsActivity.ADDRESS_BOOK_RESULT_CODE && resultCode == Activity.RESULT_OK) {
+            val batchIndex = requestCode.shr(10)
+            val item = model.outputList.value?.getOrNull(batchIndex - 1)
+            handleAddressBookResults(data, item)
         } else if (requestCode == SendCoinsActivity.
                 MANUAL_ENTRY_RESULT_CODE && resultCode == Activity.RESULT_OK) {
             model.receivingAddress.value =
@@ -352,7 +383,7 @@ abstract class SendCoinsViewModel(application: Application) : AndroidViewModel(a
         }
     }
 
-    private fun handleScanResults(resultCode: Int, data: Intent?, activity: Activity) {
+    private fun handleScanResults(resultCode: Int, data: Intent?, activity: Activity, item: BatchItem? = null) {
         if (resultCode != Activity.RESULT_OK) {
             val error = data?.getStringExtra(StringHandlerActivity.RESULT_ERROR)
             if (error != null) {
@@ -364,18 +395,40 @@ abstract class SendCoinsViewModel(application: Application) : AndroidViewModel(a
                     throw NotImplementedError("Private key must be implemented per currency")
                 }
                 ResultType.ADDRESS -> {
-                    if (data.getAddress().coinType == getAccount().basedOnCoinType) {
-                        model.receivingAddress.value = data.getAddress()
+                    if (item != null) {
+                        updateItem(item.copy(address = data.getAddress()))
                     } else {
-                        makeText(activity, context.getString(R.string.not_correct_address_type), LENGTH_LONG).show()
+                        if (data.getAddress().coinType == getAccount().basedOnCoinType) {
+                            model.receivingAddress.value = data.getAddress()
+                        } else {
+                            makeText(
+                                activity,
+                                context.getString(R.string.not_correct_address_type),
+                                LENGTH_LONG
+                            ).show()
+                        }
                     }
                 }
                 ResultType.ASSET_URI -> {
                     val uri = data.getAssetUri()
-                    if (uri.address?.coinType == getAccount().basedOnCoinType) {
-                        processAssetUri(uri)
+                    if (item != null) {
+                        updateItem(
+                            item.copy(
+                                label = uri.label ?: item.label,
+                                address = uri.address,
+                                crypto = uri.value
+                            )
+                        )
                     } else {
-                        makeText(activity, context.getString(R.string.not_correct_address_type), LENGTH_LONG).show()
+                        if (uri.address?.coinType == getAccount().basedOnCoinType) {
+                            processAssetUri(uri)
+                        } else {
+                            makeText(
+                                activity,
+                                context.getString(R.string.not_correct_address_type),
+                                LENGTH_LONG
+                            ).show()
+                        }
                     }
                 }
                 ResultType.HD_NODE -> {
@@ -409,13 +462,26 @@ abstract class SendCoinsViewModel(application: Application) : AndroidViewModel(a
         }
     }
 
-    private fun handleAddressBookResults(data: Intent?) {
+    private fun handleAddressBookResults(data: Intent?, item: BatchItem? = null) {
         // Get result from address chooser
         val address = data?.getSerializableExtra(AddressBookFragment.ADDRESS_RESULT_NAME) as Address?
                 ?: return
-        model.receivingAddress.value = address
-        if (data?.extras!!.containsKey(AddressBookFragment.ADDRESS_RESULT_LABEL)) {
-            model.receivingLabel.postValue(data.getStringExtra(AddressBookFragment.ADDRESS_RESULT_LABEL))
+        if (item != null) {
+            if (data?.extras!!.containsKey(AddressBookFragment.ADDRESS_RESULT_LABEL)) {
+                updateItem(
+                    item.copy(
+                        label = data.getStringExtra(AddressBookFragment.ADDRESS_RESULT_LABEL)!!,
+                        address = address
+                    )
+                )
+            } else {
+                updateItem(item.copy(address = address))
+            }
+        } else {
+            model.receivingAddress.value = address
+            if (data?.extras!!.containsKey(AddressBookFragment.ADDRESS_RESULT_LABEL)) {
+                model.receivingLabel.postValue(data.getStringExtra(AddressBookFragment.ADDRESS_RESULT_LABEL))
+            }
         }
         // this is where colusend is calling tryCreateUnsigned
         // why is amountToSend not set ?
@@ -444,5 +510,35 @@ abstract class SendCoinsViewModel(application: Application) : AndroidViewModel(a
             MbwManager.getEventBus().post(SyncFailed(receivingAcc))
         }
     }
+
+    private fun updateItem(item:BatchItem) {
+        val newList = model.outputList.value.orEmpty().toMutableList()
+        newList[newList.indexOfFirst { it.id == item.id }] = item
+        model.outputList.value = newList
+    }
+
+    var lastAdded = 0
+    fun addEmptyOutput() {
+        model.outputList.postValue(
+            model.outputList.value.orEmpty()
+                    + BatchItem(lastAdded, "Address ${lastAdded + 1}", null, null, null)
+        )
+        lastAdded++
+    }
+
+    fun removeOutput(it: BatchItem) {
+        val newList = model.outputList.value.orEmpty().toMutableList()
+        newList.remove(it)
+        model.outputList.value = newList
+    }
+
+}
+
+private fun List<Value>.sumOf(): Value? {
+    var result: Value? = null
+    forEach {
+        result = result?.plus(it) ?: it
+    }
+    return result
 }
 
