@@ -3,6 +3,7 @@ package com.mycelium.wallet.external.fiat.model
 import android.net.Uri
 import androidx.annotation.StringRes
 import com.mycelium.wallet.R
+import java.io.Serializable
 
 data class ChangellyMethod(
     val paymentMethod: String,
@@ -12,7 +13,7 @@ data class ChangellyMethod(
     val rate: String?,
     val invertedRate: String?,
     val offers: List<ChangellyOffer> = emptyList(),
-)
+) : Serializable
 
 data class ChangellyOffer(
     val name: String,
@@ -20,13 +21,13 @@ data class ChangellyOffer(
     val providerCode: String,
     val data: ChangellyOfferData? = null,
     val error: OfferErrorType? = null,
-)
+) : Serializable
 
 data class ChangellyOfferData(
     val rate: String,
     val invertedRate: String,
     val amountExpectedTo: String,
-)
+) : Serializable
 
 enum class OfferErrorType(@StringRes val messageId: Int) {
     MIN(R.string.buy_crypto_error_min),

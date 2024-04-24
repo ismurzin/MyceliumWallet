@@ -147,6 +147,14 @@ class BuyCryptoViewModel(
         }
     }
 
+    fun getFiatBalance(): String? {
+        return toAccount.value?.accountBalance?.spendable?.let { value ->
+            mbwManager.exchangeRateManager
+                .get(value, mbwManager.getFiatCurrency(toAccount.value?.coinType))
+                ?.toStringFriendlyWithUnit()
+        }
+    }
+
     private fun getToAccountForInit() =
         if (isSupported(mbwManager.selectedAccount.coinType)) mbwManager.selectedAccount
         else mbwManager.getWalletManager(false)

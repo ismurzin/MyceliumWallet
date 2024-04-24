@@ -21,6 +21,7 @@ import com.mycelium.wallet.activity.modern.event.BackListener
 import com.mycelium.wallet.activity.util.resizeTextView
 import com.mycelium.wallet.activity.util.startCursor
 import com.mycelium.wallet.activity.util.stopCursor
+import com.mycelium.wallet.activity.util.toStringFriendlyWithUnit
 import com.mycelium.wallet.activity.view.ValueKeyboard
 import com.mycelium.wallet.databinding.FragmentBuyCryptoBinding
 import com.mycelium.wallet.event.ExchangeRatesRefreshed
@@ -235,12 +236,26 @@ class BuyCryptoFragment : Fragment(), BackListener {
         val toAccount = viewModel.toAccount.value ?: return
         val sendAmount = viewModel.sellValue.value ?: return
         val method = viewModel.currentMethod.value ?: return
-        BuyCryptoDetailedFragment(
-            receiveAccount = toAccount,
-            sendAmount = sendAmount,
-            method = method,
-            offer = offer,
-        ).show(parentFragmentManager, null)
+        BuyCryptoDetailedFragment().apply {
+            arguments = Bundle().apply {
+                putString(BuyCryptoDetailedFragment.ACCOUNT_NAME_KEY, toAccount.label)
+                putString(
+                    BuyCryptoDetailedFragment.ACCOUNT_ADDRESS_KEY,
+                    toAccount.receiveAddress?.toString()
+                )
+                putString(
+                    BuyCryptoDetailedFragment.ACCOUNT_BALANCE_KEY,
+                    toAccount.accountBalance.spendable?.toStringFriendlyWithUnit()
+                )
+                putString(
+                    BuyCryptoDetailedFragment.ACCOUNT_FIAT_BALANCE_KEY,
+                    viewModel.getFiatBalance()
+                )
+                putString(BuyCryptoDetailedFragment.ACCOUNT_SEND_AMOUNT_KEY, sendAmount)
+                putSerializable(BuyCryptoDetailedFragment.ACCOUNT_METHOD_KEY, method)
+                putSerializable(BuyCryptoDetailedFragment.ACCOUNT_OFFER_KEY, offer)
+            }
+        }.show(parentFragmentManager, null)
     }
 
     @Subscribe

@@ -27,6 +27,7 @@
             tools:src="@drawable/ic_no_photo_placeholder" />
 
         <LinearLayout
+            android:id="@+id/providerContainer"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_marginStart="8dp"
@@ -54,13 +55,19 @@
 
         <TextView
             android:id="@+id/amount"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:autoSizeMaxTextSize="16sp"
+            android:autoSizeTextType="uniform"
+            android:gravity="end|center_vertical"
+            android:maxLines="1"
             android:textSize="16sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/providerContainer"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="0.003067 BTC" />
+            tools:targetApi="o"
+            tools:text="0.0034223 BTC" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <TextView

@@ -1,299 +1,309 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fillViewport="true"
     android:padding="16dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/accountLayout"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="@drawable/bg_coin_account_rounded"
-        android:paddingHorizontal="12dp"
-        android:paddingVertical="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/accountLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_coin_account_rounded"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/accountName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:textColor="@color/fio_white_alpha_0_6"
+                android:textSize="14sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="Bitcoin 1" />
+
+            <TextView
+                android:id="@+id/accountBalance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/fio_white_alpha_0_6"
+                android:textSize="14sp"
+                app:layout_constraintBaseline_toBaselineOf="@id/accountName"
+                app:layout_constraintEnd_toEndOf="parent"
+                tools:text="0.00234800 BTC" />
+
+            <TextView
+                android:id="@+id/accountAddress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="8dp"
+                android:ellipsize="middle"
+                android:maxEms="9"
+                android:singleLine="true"
+                android:textColor="#61666B"
+                android:textSize="14sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="@id/accountName"
+                app:layout_constraintTop_toBottomOf="@id/accountName"
+                tools:text="0ckrfrm...jJfrnJ" />
+
+            <TextView
+                android:id="@+id/accountBalanceFiat"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#61666B"
+                android:textSize="14sp"
+                app:layout_constraintBaseline_toBaselineOf="@id/accountAddress"
+                app:layout_constraintEnd_toEndOf="parent"
+                tools:text="0.00 USD" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <TextView
-            android:id="@+id/accountName"
+            android:id="@+id/transactionDetails"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:textColor="@color/fio_white_alpha_0_6"
+            android:layout_marginTop="24dp"
+            android:fontFamily="sans-serif-medium"
+            android:text="@string/buy_crypto_detailed_transaction_details"
+            android:textSize="20sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/accountLayout" />
+
+        <ImageView
+            android:id="@+id/sendIcon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginTop="16dp"
+            android:src="@drawable/ic_buy_crypto_sell"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/transactionDetails" />
+
+        <TextView
+            android:id="@+id/sendTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="@string/buy_crypto_detailed_you_send"
+            android:textColor="#E0E0E0"
+            android:textSize="14sp"
+            app:layout_constraintStart_toEndOf="@id/sendIcon"
+            app:layout_constraintTop_toTopOf="@id/sendIcon" />
+
+        <TextView
+            android:id="@+id/sendAmount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            app:layout_constraintStart_toStartOf="@id/sendTitle"
+            app:layout_constraintTop_toBottomOf="@id/sendTitle"
+            tools:text="1 500 USD" />
+
+        <ImageView
+            android:id="@+id/rateIcon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginTop="16dp"
+            android:src="@drawable/ic_buy_crypto_rate"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/sendAmount" />
+
+        <TextView
+            android:id="@+id/rateTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="@string/buy_crypto_detailed_exchange_rate"
+            android:textColor="#E0E0E0"
+            android:textSize="14sp"
+            app:layout_constraintStart_toEndOf="@id/rateIcon"
+            app:layout_constraintTop_toTopOf="@id/rateIcon" />
+
+        <TextView
+            android:id="@+id/rate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            app:layout_constraintStart_toStartOf="@id/rateTitle"
+            app:layout_constraintTop_toBottomOf="@id/rateTitle"
+            tools:text="1 BTC ≈ 51,369.71 USD" />
+
+        <View
+            android:id="@+id/divider"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_marginTop="16dp"
+            android:background="#3B3B3B"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/rate" />
+
+        <ImageView
+            android:id="@+id/receiveIcon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginTop="16dp"
+            android:src="@drawable/ic_buy_crypto_buy"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/divider" />
+
+        <TextView
+            android:id="@+id/receiveTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="@string/buy_crypto_detailed_you_get"
+            android:textColor="#E0E0E0"
+            android:textSize="14sp"
+            app:layout_constraintStart_toEndOf="@id/receiveIcon"
+            app:layout_constraintTop_toTopOf="@id/receiveIcon" />
+
+        <TextView
+            android:id="@+id/receiveAmount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            app:layout_constraintStart_toStartOf="@id/receiveTitle"
+            app:layout_constraintTop_toBottomOf="@id/receiveTitle"
+            tools:text="0.003067 BTC" />
+
+        <TextView
+            android:id="@+id/poweredByTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/buy_crypto_detailed_powered_by"
+            android:textColor="#E0E0E0"
             android:textSize="14sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:text="Bitcoin 1" />
+            app:layout_constraintTop_toBottomOf="@id/receiveAmount" />
 
-        <TextView
-            android:id="@+id/accountBalance"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/fio_white_alpha_0_6"
-            android:textSize="14sp"
-            app:layout_constraintBaseline_toBaselineOf="@id/accountName"
-            app:layout_constraintEnd_toEndOf="parent"
-            tools:text="0.00234800 BTC" />
-
-        <TextView
-            android:id="@+id/accountAddress"
+        <LinearLayout
+            android:id="@+id/poweredByLayout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:layout_marginBottom="8dp"
-            android:ellipsize="middle"
-            android:maxEms="9"
-            android:singleLine="true"
-            android:textColor="#61666B"
-            android:textSize="14sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="@id/accountName"
-            app:layout_constraintTop_toBottomOf="@id/accountName"
-            tools:text="0ckrfrm...jJfrnJ" />
+            android:orientation="horizontal"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/poweredByTitle">
+
+            <ImageView
+                android:id="@+id/poweredByIcon"
+                android:layout_width="20dp"
+                android:layout_height="match_parent"
+                android:background="@drawable/circle_photo_shape"
+                tools:src="@drawable/ic_buy_crypto_changelly" />
+
+            <TextView
+                android:id="@+id/poweredByName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:fontFamily="sans-serif-medium"
+                android:textSize="14sp"
+                tools:text="MoonPay" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:text="x"
+                android:textSize="14sp" />
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginStart="4dp"
+                android:src="@drawable/ic_buy_crypto_changelly" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:fontFamily="sans-serif-medium"
+                android:text="@string/buy_crypto_detailed_changelly"
+                android:textSize="14sp" />
+        </LinearLayout>
+
 
         <TextView
-            android:id="@+id/accountBalanceFiat"
+            android:id="@+id/selectedMethodTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#61666B"
+            android:layout_marginTop="16dp"
+            android:text="@string/buy_crypto_detailed_selected_method"
+            android:textColor="#E0E0E0"
             android:textSize="14sp"
-            app:layout_constraintBaseline_toBaselineOf="@id/accountAddress"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/poweredByLayout" />
+
+        <FrameLayout
+            android:id="@+id/selectedMethod"
+            android:layout_width="50dp"
+            android:layout_height="25dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/buy_crypto_detailed_method_background"
+            android:paddingHorizontal="4dp"
+            android:paddingVertical="2dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/selectedMethodTitle">
+
+            <ImageView
+                android:id="@+id/selectedMethodIcon"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                tools:src="@drawable/logo_sepa" />
+        </FrameLayout>
+
+
+        <Button
+            android:id="@+id/back"
+            style="@style/MyceliumButton.Transparent"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:text="@string/buy_crypto_detailed_back"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toTopOf="@id/confirm"
             app:layout_constraintEnd_toEndOf="parent"
-            tools:text="0.00 USD" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/selectedMethod"
+            app:layout_constraintVertical_bias="1" />
+
+        <Button
+            android:id="@+id/confirm"
+            style="@style/MyceliumButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/buy_crypto_detailed_confirm"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <ProgressBar
+            android:id="@+id/confirmProgress"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:theme="@style/CircularProgressBar"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@id/confirm"
+            app:layout_constraintEnd_toEndOf="@id/confirm"
+            app:layout_constraintStart_toStartOf="@id/confirm"
+            app:layout_constraintTop_toTopOf="@id/confirm" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <TextView
-        android:id="@+id/transactionDetails"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:fontFamily="sans-serif-medium"
-        android:text="@string/buy_crypto_detailed_transaction_details"
-        android:textSize="20sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/accountLayout" />
-
-    <ImageView
-        android:id="@+id/sendIcon"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_marginTop="16dp"
-        android:src="@drawable/ic_buy_crypto_sell"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/transactionDetails" />
-
-    <TextView
-        android:id="@+id/sendTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:text="@string/buy_crypto_detailed_you_send"
-        android:textColor="#E0E0E0"
-        android:textSize="14sp"
-        app:layout_constraintStart_toEndOf="@id/sendIcon"
-        app:layout_constraintTop_toTopOf="@id/sendIcon" />
-
-    <TextView
-        android:id="@+id/sendAmount"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="14sp"
-        app:layout_constraintStart_toStartOf="@id/sendTitle"
-        app:layout_constraintTop_toBottomOf="@id/sendTitle"
-        tools:text="1 500 USD" />
-
-    <ImageView
-        android:id="@+id/rateIcon"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_marginTop="16dp"
-        android:src="@drawable/ic_buy_crypto_rate"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/sendAmount" />
-
-    <TextView
-        android:id="@+id/rateTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:text="@string/buy_crypto_detailed_exchange_rate"
-        android:textColor="#E0E0E0"
-        android:textSize="14sp"
-        app:layout_constraintStart_toEndOf="@id/rateIcon"
-        app:layout_constraintTop_toTopOf="@id/rateIcon" />
-
-    <TextView
-        android:id="@+id/rate"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="14sp"
-        app:layout_constraintStart_toStartOf="@id/rateTitle"
-        app:layout_constraintTop_toBottomOf="@id/rateTitle"
-        tools:text="1 BTC ≈ 51,369.71 USD" />
-
-    <View
-        android:id="@+id/divider"
-        android:layout_width="0dp"
-        android:layout_height="1dp"
-        android:layout_marginTop="16dp"
-        android:background="#3B3B3B"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/rate" />
-
-    <ImageView
-        android:id="@+id/receiveIcon"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_marginTop="16dp"
-        android:src="@drawable/ic_buy_crypto_buy"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/divider" />
-
-    <TextView
-        android:id="@+id/receiveTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:text="@string/buy_crypto_detailed_you_get"
-        android:textColor="#E0E0E0"
-        android:textSize="14sp"
-        app:layout_constraintStart_toEndOf="@id/receiveIcon"
-        app:layout_constraintTop_toTopOf="@id/receiveIcon" />
-
-    <TextView
-        android:id="@+id/receiveAmount"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="14sp"
-        app:layout_constraintStart_toStartOf="@id/receiveTitle"
-        app:layout_constraintTop_toBottomOf="@id/receiveTitle"
-        tools:text="0.003067 BTC" />
-
-    <TextView
-        android:id="@+id/poweredByTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="@string/buy_crypto_detailed_powered_by"
-        android:textColor="#E0E0E0"
-        android:textSize="14sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/receiveAmount" />
-
-    <LinearLayout
-        android:id="@+id/poweredByLayout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:orientation="horizontal"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/poweredByTitle">
-
-        <ImageView
-            android:id="@+id/poweredByIcon"
-            android:layout_width="20dp"
-            android:layout_height="match_parent"
-            android:background="@drawable/circle_photo_shape"
-            tools:src="@drawable/ic_buy_crypto_changelly" />
-
-        <TextView
-            android:id="@+id/poweredByName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:fontFamily="sans-serif-medium"
-            android:textSize="14sp"
-            tools:text="MoonPay" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:text="x"
-            android:textSize="14sp" />
-
-        <ImageView
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_marginStart="4dp"
-            android:src="@drawable/ic_buy_crypto_changelly" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:fontFamily="sans-serif-medium"
-            android:text="@string/buy_crypto_detailed_changelly"
-            android:textSize="14sp" />
-    </LinearLayout>
-
-
-    <TextView
-        android:id="@+id/selectedMethodTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="@string/buy_crypto_detailed_selected_method"
-        android:textColor="#E0E0E0"
-        android:textSize="14sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/poweredByLayout" />
-
-    <FrameLayout
-        android:layout_width="50dp"
-        android:layout_height="25dp"
-        android:layout_marginTop="4dp"
-        android:background="@drawable/buy_crypto_detailed_method_background"
-        android:paddingHorizontal="4dp"
-        android:paddingVertical="2dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/selectedMethodTitle">
-
-        <ImageView
-            android:id="@+id/selectedMethodIcon"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            tools:src="@drawable/logo_sepa" />
-    </FrameLayout>
-
-
-    <Button
-        android:id="@+id/back"
-        style="@style/MyceliumButton.Transparent"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:text="@string/buy_crypto_detailed_back"
-        android:textSize="20sp"
-        app:layout_constraintBottom_toTopOf="@id/confirm"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <Button
-        android:id="@+id/confirm"
-        style="@style/MyceliumButton"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/buy_crypto_detailed_confirm"
-        android:textSize="20sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <ProgressBar
-        android:id="@+id/confirmProgress"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:theme="@style/CircularProgressBar"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/confirm"
-        app:layout_constraintEnd_toEndOf="@id/confirm"
-        app:layout_constraintStart_toStartOf="@id/confirm"
-        app:layout_constraintTop_toTopOf="@id/confirm" />
-
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>
