@@ -11,7 +11,7 @@ data class FixRate(
     val maxTo: BigDecimal,
     val minFrom: BigDecimal,
     val minTo: BigDecimal,
-    val amountFrom: BigDecimal,
-    val amountTo: BigDecimal,
-    val networkFee: BigDecimal,
+    val amountFrom: BigDecimal?,
+    val amountTo: BigDecimal?,
+    val networkFee: BigDecimal?,
 )
