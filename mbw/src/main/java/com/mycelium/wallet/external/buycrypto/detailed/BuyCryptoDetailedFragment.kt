@@ -18,6 +18,7 @@ import com.mycelium.wallet.activity.modern.Toaster
 import com.mycelium.wallet.databinding.FragmentBuyCryptoDetailedBinding
 import com.mycelium.wallet.external.fiat.model.ChangellyMethod
 import com.mycelium.wallet.external.fiat.model.ChangellyOffer
+import java.text.DecimalFormat
 
 class BuyCryptoDetailedFragment : DialogFragment() {
 
@@ -25,7 +26,7 @@ class BuyCryptoDetailedFragment : DialogFragment() {
     private val viewModel: BuyCryptoDetailedViewModel by viewModels()
     private var offer: ChangellyOffer? = null
     private var method: ChangellyMethod? = null
-
+    private val decimalFormat = DecimalFormat("#.########")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setStyle(STYLE_NORMAL, R.style.Dialog_Changelly)
@@ -77,7 +78,7 @@ class BuyCryptoDetailedFragment : DialogFragment() {
         rate.text = getString(
             R.string.buy_crypto_detailed_rate,
             method?.currencyTo,
-            data.invertedRate,
+            decimalFormat.format(data.invertedRate.toDouble()),
             method?.currencyFrom,
         )
         receiveAmount.text = getString(
